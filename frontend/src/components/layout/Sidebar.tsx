@@ -12,18 +12,19 @@ interface NavItem {
   end?: boolean;
 }
 
+// One consistent gold identity across every role — only the icon/label differ.
 const THEME: Record<UserRole, { badgeBg: string; activeBg: string; badgeChip: string; icon: string; label: string }> = {
   member: {
-    badgeBg: 'bg-blue-50/70 border-blue-200/80 text-blue-900',
-    activeBg: 'bg-blue-600 shadow-blue-500/20',
-    badgeChip: 'bg-blue-100 text-blue-700',
+    badgeBg: 'bg-amber-50/70 border-amber-200/80 text-amber-900',
+    activeBg: 'bg-gradient-to-r from-amber-500 to-yellow-500 shadow-amber-500/25',
+    badgeChip: 'bg-amber-100 text-amber-700',
     icon: 'school',
     label: 'Choir Member',
   },
   leader: {
-    badgeBg: 'bg-indigo-50/70 border-indigo-200/80 text-indigo-900',
-    activeBg: 'bg-indigo-600 shadow-indigo-500/20',
-    badgeChip: 'bg-indigo-100 text-indigo-700',
+    badgeBg: 'bg-amber-50/70 border-amber-200/80 text-amber-900',
+    activeBg: 'bg-gradient-to-r from-amber-500 to-yellow-500 shadow-amber-500/25',
+    badgeChip: 'bg-amber-100 text-amber-700',
     icon: 'psychology',
     label: 'Choir Leader',
   },
