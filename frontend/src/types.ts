@@ -1,4 +1,4 @@
-﻿export type UserRole = 'member' | 'leader';
+﻿export type UserRole = 'member' | 'leader' | 'admin';
 export type QuestionType = 'multiple_choice' | 'true_false' | 'short_answer';
 export type DifficultyLevel = 'Easy' | 'Medium' | 'Hard';
 

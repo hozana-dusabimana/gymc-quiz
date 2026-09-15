@@ -1,7 +1,8 @@
-﻿import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useQuery } from '@/hooks/useApi';
 import { Quizzes } from '@/lib/services';
+import type { UserRole } from '@/types';
 
 interface NavItem {
   to: string;
@@ -11,9 +12,34 @@ interface NavItem {
   end?: boolean;
 }
 
+const THEME: Record<UserRole, { badgeBg: string; activeBg: string; badgeChip: string; icon: string; label: string }> = {
+  member: {
+    badgeBg: 'bg-blue-50/70 border-blue-200/80 text-blue-900',
+    activeBg: 'bg-blue-600 shadow-blue-500/20',
+    badgeChip: 'bg-blue-100 text-blue-700',
+    icon: 'school',
+    label: 'Choir Member',
+  },
+  leader: {
+    badgeBg: 'bg-indigo-50/70 border-indigo-200/80 text-indigo-900',
+    activeBg: 'bg-indigo-600 shadow-indigo-500/20',
+    badgeChip: 'bg-indigo-100 text-indigo-700',
+    icon: 'psychology',
+    label: 'Choir Leader',
+  },
+  admin: {
+    badgeBg: 'bg-amber-50/70 border-amber-200/80 text-amber-900',
+    activeBg: 'bg-gradient-to-r from-amber-500 to-yellow-500 shadow-amber-500/25',
+    badgeChip: 'bg-amber-100 text-amber-700',
+    icon: 'admin_panel_settings',
+    label: 'Administrator',
+  },
+};
+
 export function Sidebar({ mobileOpen, onClose }: { mobileOpen: boolean; onClose: () => void }) {
   const { user } = useAuth();
-  const role = user?.role ?? 'member';
+  const role: UserRole = user?.role ?? 'member';
+  const theme = THEME[role];
 
   const { data: quizzes } = useQuery(
     () => (role === 'member' ? Quizzes.list() : Promise.resolve([])),
@@ -42,22 +68,18 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen: boolean; onClose:
     { to: '/leader/analytics', label: 'Analytics & Grades', icon: 'query_stats' },
   ];
 
-  const nav = role === 'member' ? memberNav : leaderNav;
+  const adminNav: NavItem[] = [
+    { to: '/admin', label: 'Leaders & Admins', icon: 'admin_panel_settings', end: true },
+  ];
+
+  const nav = role === 'member' ? memberNav : role === 'leader' ? leaderNav : adminNav;
 
   const inner = (
     <div className="space-y-6">
-      <div
-        className={`p-3 rounded-xl border text-xs ${
-          role === 'member'
-            ? 'bg-blue-50/70 border-blue-200/80 text-blue-900'
-            : 'bg-indigo-50/70 border-indigo-200/80 text-indigo-900'
-        }`}
-      >
+      <div className={`p-3 rounded-xl border text-xs ${theme.badgeBg}`}>
         <div className="flex items-center gap-2 font-bold mb-1">
-          <span className="material-symbols-outlined text-base">
-            {role === 'member' ? 'school' : 'psychology'}
-          </span>
-          <span>{role === 'member' ? 'Choir Member' : 'Choir Leader'}</span>
+          <span className="material-symbols-outlined text-base">{theme.icon}</span>
+          <span>{theme.label}</span>
         </div>
         <p className="text-[11px] text-slate-600">{user?.name}</p>
       </div>
@@ -75,11 +97,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen: boolean; onClose:
             data-tour={`nav-${item.to}`}
             className={({ isActive }) =>
               `w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                isActive
-                  ? role === 'member'
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 font-semibold'
-                    : 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                isActive ? `${theme.activeBg} text-white shadow-md font-semibold` : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`
             }
           >
@@ -98,7 +116,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen: boolean; onClose:
                 {item.badge && (
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      isActive ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'
+                      isActive ? 'bg-white/20 text-white' : theme.badgeChip
                     }`}
                   >
                     {item.badge}

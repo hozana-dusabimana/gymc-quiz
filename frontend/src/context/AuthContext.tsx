@@ -8,12 +8,13 @@
   type ReactNode,
 } from 'react';
 import { api, setAccessToken, getAccessToken } from '@/lib/api';
-import type { User, UserRole } from '@/types';
+import type { User } from '@/types';
 
 interface AuthState {
   user: User | null;
   loading: boolean;
-  register: (input: { name: string; email: string; phone: string; password: string; role: UserRole }) => Promise<{ user: User }>;
+  /** Self-serve registration always creates a member account. */
+  register: (input: { name: string; email: string; phone: string; password: string }) => Promise<{ user: User }>;
   /** `identifier` is an email or a phone number. */
   login: (identifier: string, password: string) => Promise<{ user: User }>;
   applySession: (user: User, accessToken: string) => void;

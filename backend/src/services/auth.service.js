@@ -65,13 +65,18 @@ export function publicUser(u) {
   };
 }
 
-/** Register a self-serve account with name, email, phone and password, and log them straight in. */
-export async function register({ name, email, phone, password, role, userAgent }) {
+const CREATABLE_ROLES = ['member', 'leader', 'admin'];
+
+/**
+ * Validate and insert a new account. Shared by self-serve member registration
+ * and admin-created leader/admin accounts. Does not start a session.
+ */
+async function createAccount({ name, email, phone, password, role }) {
   email = normaliseEmail(email);
   phone = String(phone || '').trim();
   if (!EMAIL_RE.test(email)) throw errors.validation('A valid email is required');
   if (!phone) throw errors.validation('A phone number is required');
-  if (!['member', 'leader'].includes(role)) throw errors.validation('role must be member or leader');
+  if (!CREATABLE_ROLES.includes(role)) throw errors.validation('Invalid role');
   if (!name || name.trim().length < 2) throw errors.validation('name is required');
   if (!password || String(password).length < 6) {
     throw errors.validation('Password must be at least 6 characters');
@@ -90,7 +95,31 @@ export async function register({ name, email, phone, password, role, userAgent }
      VALUES ($1, $2, $3, $4, $5, true) RETURNING *`,
     [role, email, name.trim(), phone, passwordHash],
   );
-  return startSession(rows[0], userAgent);
+  return rows[0];
+}
+
+/** Self-serve registration — always creates a member, then logs them straight in. */
+export async function register({ name, email, phone, password, userAgent }) {
+  const user = await createAccount({ name, email, phone, password, role: 'member' });
+  return startSession(user, userAgent);
+}
+
+/**
+ * Admin-only: create a leader or admin account. Does not start a session —
+ * the admin stays signed in as themselves; the new user signs in separately.
+ */
+export async function createUserByAdmin({ name, email, phone, password, role }) {
+  if (!['leader', 'admin'].includes(role)) throw errors.validation('role must be leader or admin');
+  const user = await createAccount({ name, email, phone, password, role });
+  return publicUser(user);
+}
+
+/** List every leader/admin account, newest first. */
+export async function listStaffUsers() {
+  const { rows } = await query(
+    `SELECT * FROM users WHERE role IN ('leader', 'admin') ORDER BY created_at DESC`,
+  );
+  return rows.map(publicUser);
 }
 
 /** Sign in with an email or phone number plus password. */

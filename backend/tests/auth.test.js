@@ -2,33 +2,40 @@ import { describe, it, expect } from 'vitest';
 import { request, signup, uniqueEmail, uniquePhone, auth, DEFAULT_PASSWORD } from './helpers.js';
 
 describe('auth', () => {
-  it('registers a user with name/phone/email/password and logs them straight in', async () => {
-    const email = uniqueEmail('leader');
+  it('registers a user with name/phone/email/password and logs them straight in as a member', async () => {
+    const email = uniqueEmail('member');
     const phone = uniquePhone();
     const res = await request
       .post('/api/auth/register')
-      .send({ name: 'Ada L', email, phone, role: 'leader', password: DEFAULT_PASSWORD });
+      .send({ name: 'Ada L', email, phone, password: DEFAULT_PASSWORD });
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data.accessToken).toBeTruthy();
-    expect(res.body.data.user.role).toBe('leader');
+    expect(res.body.data.user.role).toBe('member');
     expect(res.body.data.user.email).toBe(email.toLowerCase());
     expect(res.headers['set-cookie']?.join()).toMatch(/gymc_rt=/);
+  });
+
+  it('ignores a role in the public registration payload — always creates a member', async () => {
+    const email = uniqueEmail('sneaky');
+    const res = await request
+      .post('/api/auth/register')
+      .send({ name: 'Sneaky', email, phone: uniquePhone(), role: 'leader', password: DEFAULT_PASSWORD });
+    expect(res.status).toBe(201);
+    expect(res.body.data.user.role).toBe('member');
   });
 
   it('rejects invalid registration payloads', async () => {
     const res = await request
       .post('/api/auth/register')
-      .send({ name: 'x', email: 'nope', role: 'admin', phone: '123', password: '123' });
+      .send({ name: 'x', email: 'nope', phone: '123', password: '123' });
     expect(res.status).toBe(422);
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });
 
   it('rejects registration missing a password or phone', async () => {
     const email = uniqueEmail('member');
-    const res = await request
-      .post('/api/auth/register')
-      .send({ name: 'No Pass', email, role: 'member' });
+    const res = await request.post('/api/auth/register').send({ name: 'No Pass', email });
     expect(res.status).toBe(422);
   });
 
@@ -36,11 +43,11 @@ describe('auth', () => {
     const s = await signup('member');
     const byEmail = await request
       .post('/api/auth/register')
-      .send({ name: 'Dup', email: s.email, phone: uniquePhone(), role: 'member', password: DEFAULT_PASSWORD });
+      .send({ name: 'Dup', email: s.email, phone: uniquePhone(), password: DEFAULT_PASSWORD });
     expect(byEmail.status).toBe(409);
     const byPhone = await request
       .post('/api/auth/register')
-      .send({ name: 'Dup', email: uniqueEmail('member'), phone: s.phone, role: 'member', password: DEFAULT_PASSWORD });
+      .send({ name: 'Dup', email: uniqueEmail('member'), phone: s.phone, password: DEFAULT_PASSWORD });
     expect(byPhone.status).toBe(409);
   });
 

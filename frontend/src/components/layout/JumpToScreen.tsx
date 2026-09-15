@@ -30,6 +30,10 @@ const SCREENS: Record<UserRole, Screen[]> = {
     { to: '/leader/analytics', label: 'Analytics & Grades', icon: 'query_stats', keywords: 'submissions marking review scores stats' },
     { to: '/profile', label: 'Manage profile', icon: 'person', keywords: 'account settings name' },
   ],
+  admin: [
+    { to: '/admin', label: 'Leaders & Admins', icon: 'admin_panel_settings', end: true, keywords: 'create manage staff accounts' },
+    { to: '/profile', label: 'Manage profile', icon: 'person', keywords: 'account settings name' },
+  ],
 };
 
 function isCurrent(pathname: string, s: Screen): boolean {

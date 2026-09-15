@@ -155,6 +155,21 @@ export const Users = {
   stats: <T = MemberStats | LeaderStats>() => http.get<{ stats: T }>('/users/me/stats').then((r) => r.stats),
 };
 
+// ---- admin (create/list leader & admin accounts) ----
+export interface StaffUser {
+  id: string;
+  role: 'leader' | 'admin';
+  name: string;
+  email: string;
+  phone: string | null;
+  createdAt: string;
+}
+export const Admin = {
+  list: () => http.get<{ users: StaffUser[] }>('/admin/users').then((r) => r.users),
+  create: (body: { name: string; email: string; phone: string; password: string; role: 'leader' | 'admin' }) =>
+    http.post<{ user: StaffUser }>('/admin/users', body).then((r) => r.user),
+};
+
 // ---- notifications ----
 export const Notifications = {
   list: () =>

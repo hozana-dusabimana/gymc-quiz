@@ -18,7 +18,7 @@ export function TopNavigation({
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const home = user?.role === 'member' ? '/member' : '/leader';
+  const home = user?.role === 'member' ? '/member' : user?.role === 'admin' ? '/admin' : '/leader';
 
   const { data: notif } = useQuery(() => Notifications.list(), []);
   const unread = notif?.unreadCount ?? 0;
@@ -50,13 +50,13 @@ export function TopNavigation({
             <span className="material-symbols-outlined">menu</span>
           </button>
           <Link to={home} className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 flex items-center justify-center text-white shadow-md shadow-amber-500/25 group-hover:scale-105 transition-transform">
               <span className="material-symbols-outlined text-[24px]">school</span>
             </div>
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-lg tracking-tight text-slate-900">
-                  GYMC <span className="text-blue-600">Quiz</span>
+                  GYMC <span className="text-amber-600">Quiz</span>
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium hidden sm:block">

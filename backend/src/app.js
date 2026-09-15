@@ -18,6 +18,7 @@ import resultRoutes from './routes/results.routes.js';
 import userRoutes from './routes/users.routes.js';
 import notificationRoutes from './routes/notifications.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 import fileRoutes from './routes/files.routes.js';
 import { storageDriver } from './lib/storage.js';
 
@@ -66,6 +67,7 @@ export function createApp() {
   app.use('/api/users', userRoutes);
   app.use('/api/notifications', notificationRoutes);
   app.use('/api/analytics', analyticsRoutes);
+  app.use('/api/admin', adminRoutes);
   app.use('/files', fileRoutes);
 
   app.use(notFoundHandler);

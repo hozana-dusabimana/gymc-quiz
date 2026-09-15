@@ -4,6 +4,8 @@ import { LoadingState } from './components/ui/States';
 import { AppLayout } from './components/layout/AppLayout';
 import { LoginScreen } from './components/LoginScreen';
 import { HomePage } from './pages/HomePage';
+import { TermsPage, PrivacyPage } from './pages/PolicyPage';
+import { AdminDashboardPage } from './pages/AdminDashboardPage';
 
 import { MemberDashboardPage } from './pages/MemberDashboardPage';
 import { LeaderDashboardPage } from './pages/LeaderDashboardPage';
@@ -28,7 +30,9 @@ import type { User, UserRole } from './types';
 
 /** Home for the current user's role. */
 function homePath(user: User): string {
-  return user.role === 'member' ? '/member' : '/leader';
+  if (user.role === 'member') return '/member';
+  if (user.role === 'admin') return '/admin';
+  return '/leader';
 }
 
 function RequireAuth({ role, children }: { role?: UserRole; children: ReactElement }) {
@@ -72,6 +76,9 @@ export default function App() {
           )
         }
       />
+
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
 
       {/* Quiz taking is full-screen (no sidebar) */}
       <Route
@@ -120,6 +127,9 @@ export default function App() {
         <Route path="/leader/analytics" element={<RequireAuth role="leader"><AnalyticsPage /></RequireAuth>} />
         <Route path="/leader/quizzes/:quizId/analytics" element={<RequireAuth role="leader"><QuizAnalyticsPage /></RequireAuth>} />
         <Route path="/leader/results/:attemptId" element={<RequireAuth role="leader"><ResultDetailPage /></RequireAuth>} />
+
+        {/* admin */}
+        <Route path="/admin" element={<RequireAuth role="admin"><AdminDashboardPage /></RequireAuth>} />
 
         {/* shared */}
         <Route path="/courses/:courseId" element={<CourseWorkspacePage />} />

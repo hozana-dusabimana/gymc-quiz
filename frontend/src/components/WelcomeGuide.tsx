@@ -147,6 +147,26 @@ const STEPS: Record<UserRole, GuideStep[]> = {
       cta: { label: 'Open Analytics & Grades', to: '/leader/analytics' },
     },
   ],
+  admin: [
+    {
+      icon: 'waving_hand',
+      title: 'Welcome, administrator',
+      body: 'Your job is simple: create the accounts choir leaders (and other admins) sign in with.',
+      points: [
+        'Members still register themselves — you only create leader and admin accounts.',
+        'Reopen this guide any time from "Guide".',
+      ],
+      anchor: 'guide-button',
+    },
+    {
+      icon: 'person_add',
+      title: '1 · Create a leader',
+      body: 'Fill in their name, phone, email and a temporary password, then share the password with them securely.',
+      points: ['They sign in immediately with the credentials you set.'],
+      anchor: 'nav-/admin',
+      cta: { label: 'Open Leaders & Admins', to: '/admin' },
+    },
+  ],
 };
 
 const SEEN_PREFIX = 'gymc.welcomeGuide.seen.';

@@ -31,12 +31,13 @@ function clearRefreshCookie(res) {
   res.clearCookie(REFRESH_COOKIE, { path: '/api/auth' });
 }
 
+// Self-serve registration always creates a member — leader and admin
+// accounts are created by an admin via /api/admin/users.
 const registerSchema = z.object({
   name: z.string().min(2).max(120),
   email: z.string().email().max(160),
   phone: z.string().min(6).max(40),
   password: z.string().min(6).max(200),
-  role: z.enum(['member', 'leader']),
 });
 
 router.post(
