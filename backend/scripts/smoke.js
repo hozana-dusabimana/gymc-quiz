@@ -1,6 +1,6 @@
 /* Quick end-to-end smoke test against a running server (default :4000).
  * Usage: node scripts/smoke.js [baseUrl]
- * Exercises: auth (OTP), course, enrollment, questions, quiz, publish,
+ * Exercises: auth (password), course, enrollment, questions, quiz, publish,
  * member attempt, answer save, submit, deterministic + AI grading, results.
  */
 const BASE = (process.argv[2] || 'http://localhost:4000') + '/api';
@@ -32,15 +32,17 @@ async function api(method, path, { token, body, raw } = {}) {
 }
 
 async function signup(role) {
-  const email = `${role}.${Date.now()}.${Math.random().toString(36).slice(2, 7)}@smoke.test`;
-  const reg = await api('POST', '/auth/register', { body: { name: `Smoke ${role}`, email, role } });
-  const code = reg?.data?.devCode;
-  const login = await api('POST', '/auth/verify-otp', { body: { email, code } });
-  return { email, token: login?.data?.accessToken, user: login?.data?.user };
+  const stamp = `${Date.now()}.${Math.random().toString(36).slice(2, 7)}`;
+  const email = `${role}.${stamp}@smoke.test`;
+  const phone = `07${stamp}`.replace(/\D/g, '').slice(0, 10);
+  const reg = await api('POST', '/auth/register', {
+    body: { name: `Smoke ${role}`, email, phone, role, password: 'Smoke@1234' },
+  });
+  return { email, token: reg?.data?.accessToken, user: reg?.data?.user };
 }
 
 async function main() {
-  console.log(`\nUAS smoke test -> ${BASE}\n`);
+  console.log(`\nGYMC Quiz smoke test -> ${BASE}\n`);
 
   const health = await api('GET', '/../health');
   check('health ok', health?.data?.status === 'ok', JSON.stringify(health));

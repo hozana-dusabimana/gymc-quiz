@@ -3,6 +3,7 @@ import { useAuth } from './context/AuthContext';
 import { LoadingState } from './components/ui/States';
 import { AppLayout } from './components/layout/AppLayout';
 import { LoginScreen } from './components/LoginScreen';
+import { HomePage } from './pages/HomePage';
 
 import { MemberDashboardPage } from './pages/MemberDashboardPage';
 import { LeaderDashboardPage } from './pages/LeaderDashboardPage';
@@ -46,6 +47,19 @@ export default function App() {
 
   return (
     <Routes>
+      <Route
+        path="/"
+        element={
+          loading ? (
+            <LoadingState className="min-h-screen" />
+          ) : user ? (
+            <Navigate to={homePath(user)} replace />
+          ) : (
+            <HomePage />
+          )
+        }
+      />
+
       <Route
         path="/login"
         element={
@@ -114,7 +128,7 @@ export default function App() {
 
       <Route
         path="*"
-        element={<Navigate to={user ? homePath(user) : '/login'} replace />}
+        element={<Navigate to={user ? homePath(user) : '/'} replace />}
       />
     </Routes>
   );

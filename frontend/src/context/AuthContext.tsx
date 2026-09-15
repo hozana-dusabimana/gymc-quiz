@@ -13,10 +13,9 @@ import type { User, UserRole } from '@/types';
 interface AuthState {
   user: User | null;
   loading: boolean;
-  register: (input: { name: string; email: string; role: UserRole; phone?: string }) => Promise<{ devCode?: string }>;
-  /** `identifier` is an email or a member/staff ID. */
-  requestOtp: (identifier: string) => Promise<{ devCode?: string; sentTo?: string }>;
-  verifyOtp: (identifier: string, code: string) => Promise<{ user: User }>;
+  register: (input: { name: string; email: string; phone: string; password: string; role: UserRole }) => Promise<{ user: User }>;
+  /** `identifier` is an email or a phone number. */
+  login: (identifier: string, password: string) => Promise<{ user: User }>;
   applySession: (user: User, accessToken: string) => void;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -56,24 +55,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     bootstrap();
   }, [bootstrap]);
 
-  const register: AuthState['register'] = useCallback(
-    (input) => api<{ devCode?: string }>('/auth/register', { method: 'POST', body: input }),
-    [],
-  );
-
-  const requestOtp: AuthState['requestOtp'] = useCallback(
-    (identifier) =>
-      api<{ devCode?: string; sentTo?: string }>('/auth/request-otp', {
-        method: 'POST',
-        body: { identifier },
-      }),
-    [],
-  );
-
-  const verifyOtp: AuthState['verifyOtp'] = useCallback(async (identifier, code) => {
-    const res = await api<{ user: User; accessToken: string }>('/auth/verify-otp', {
+  const register: AuthState['register'] = useCallback(async (input) => {
+    const res = await api<{ user: User; accessToken: string }>('/auth/register', {
       method: 'POST',
-      body: { identifier, code },
+      body: input,
+    });
+    setAccessToken(res.accessToken);
+    setUser(res.user);
+    return { user: res.user };
+  }, []);
+
+  const login: AuthState['login'] = useCallback(async (identifier, password) => {
+    const res = await api<{ user: User; accessToken: string }>('/auth/login', {
+      method: 'POST',
+      body: { identifier, password },
     });
     setAccessToken(res.accessToken);
     setUser(res.user);
@@ -105,14 +100,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       register,
-      requestOtp,
-      verifyOtp,
+      login,
       applySession,
       logout,
       refreshUser,
       updateUser,
     }),
-    [user, loading, register, requestOtp, verifyOtp, applySession, logout, refreshUser, updateUser],
+    [user, loading, register, login, applySession, logout, refreshUser, updateUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -8,8 +8,7 @@ import { authLimiter } from '../middleware/rateLimit.js';
 import { env } from '../config/env.js';
 import {
   register,
-  requestLoginOtp,
-  verifyOtp,
+  login,
   refreshSession,
   revokeRefreshToken,
   findUserById,
@@ -35,8 +34,9 @@ function clearRefreshCookie(res) {
 const registerSchema = z.object({
   name: z.string().min(2).max(120),
   email: z.string().email().max(160),
+  phone: z.string().min(6).max(40),
+  password: z.string().min(6).max(200),
   role: z.enum(['member', 'leader']),
-  phone: z.string().max(40).optional(),
 });
 
 router.post(
@@ -44,43 +44,27 @@ router.post(
   authLimiter,
   validate(registerSchema),
   asyncHandler(async (req, res) => {
-    const result = await register(req.body);
-    ok(res, result, 201);
+    const { user, accessToken, refreshToken, refreshExpiresAt } = await register({
+      ...req.body,
+      userAgent: req.headers['user-agent'],
+    });
+    setRefreshCookie(res, refreshToken, refreshExpiresAt);
+    ok(res, { user, accessToken }, 201);
   }),
 );
 
-// Accept an email or a choir member number. `email` is kept as a legacy alias
-// so existing callers keep working.
-const identifierSchema = z
-  .object({
-    identifier: z.string().trim().min(3).max(160).optional(),
-    email: z.string().email().optional(),
-  })
-  .refine((d) => d.identifier || d.email, {
-    message: 'Provide a member number or email',
-  });
+// identifier is an email or a phone number.
+const loginSchema = z.object({
+  identifier: z.string().trim().min(3).max(160),
+  password: z.string().min(1).max(200),
+});
 
 router.post(
-  '/request-otp',
+  '/login',
   authLimiter,
-  validate(identifierSchema),
+  validate(loginSchema),
   asyncHandler(async (req, res) => {
-    ok(res, await requestLoginOtp(req.body.identifier || req.body.email));
-  }),
-);
-
-router.post(
-  '/verify-otp',
-  authLimiter,
-  validate(
-    identifierSchema.and(
-      z.object({
-        code: z.string().regex(/^\d{6}$/),
-      }),
-    ),
-  ),
-  asyncHandler(async (req, res) => {
-    const { user, accessToken, refreshToken, refreshExpiresAt } = await verifyOtp({
+    const { user, accessToken, refreshToken, refreshExpiresAt } = await login({
       ...req.body,
       userAgent: req.headers['user-agent'],
     });

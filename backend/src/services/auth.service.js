@@ -1,9 +1,6 @@
-import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { query, withTransaction } from '../db/pool.js';
-import { env } from '../config/env.js';
 import { errors } from '../utils/response.js';
-import { sendMail, otpEmail } from '../lib/email.js';
 import {
   signAccessToken,
   generateRefreshToken,
@@ -13,20 +10,17 @@ import {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// A pre-computed bcrypt hash of a value nobody will ever type, compared
+// against on a not-found lookup so a login attempt takes the same shape of
+// work whether or not the account exists.
+const DUMMY_HASH = '$2a$10$CwTycUXWue0Thq9StjUM0uJ8Q0X.q8UExx.qJb.z8t0F5x0EZ3n3e';
+
 export function normaliseEmail(email) {
   return String(email || '').trim().toLowerCase();
 }
 
 export function isEmail(value) {
   return EMAIL_RE.test(String(value || '').trim());
-}
-
-/** `jane.doe@example.com` -> `ja•••••••@example.com` — safe to show before the code screen. */
-export function maskEmail(email) {
-  const [local, domain] = String(email || '').split('@');
-  if (!domain) return email || '';
-  const head = local.slice(0, 2);
-  return `${head}${'•'.repeat(Math.max(3, local.length - 2))}@${domain}`;
 }
 
 export async function findUserByEmail(email) {
@@ -36,25 +30,18 @@ export async function findUserByEmail(email) {
   return rows[0] || null;
 }
 
-/**
- * Resolve a login identifier to a user. It can be an email or a choir member
- * number (`GYMC/001`, or just `GYMC001`). Returns null when nothing matches.
- */
+export async function findUserByPhone(phone) {
+  const raw = String(phone || '').trim();
+  if (!raw) return null;
+  const { rows } = await query('SELECT * FROM users WHERE phone = $1', [raw]);
+  return rows[0] || null;
+}
+
+/** Resolve a login identifier (email or phone number) to a user. */
 export async function findUserByIdentifier(identifier) {
   const raw = String(identifier || '').trim();
   if (!raw) return null;
-  if (isEmail(raw)) return findUserByEmail(raw);
-  const compact = raw.replace(/\s+/g, '');
-  const { rows } = await query(
-    `SELECT * FROM users
-       WHERE lower(member_number) = lower($1)
-          OR replace(lower(member_number), ' ', '') = lower($2)
-          OR lower(member_number) LIKE lower($2) || '/%'
-       ORDER BY last_login_at DESC NULLS LAST, created_at DESC
-       LIMIT 1`,
-    [raw, compact],
-  );
-  return rows[0] || null;
+  return isEmail(raw) ? findUserByEmail(raw) : findUserByPhone(raw);
 }
 
 export async function findUserById(id) {
@@ -78,118 +65,58 @@ export function publicUser(u) {
   };
 }
 
-/** Register a self-serve account, then issue a login OTP. */
-export async function register({ name, email, role, phone }) {
+/** Register a self-serve account with name, email, phone and password, and log them straight in. */
+export async function register({ name, email, phone, password, role, userAgent }) {
   email = normaliseEmail(email);
+  phone = String(phone || '').trim();
   if (!EMAIL_RE.test(email)) throw errors.validation('A valid email is required');
+  if (!phone) throw errors.validation('A phone number is required');
   if (!['member', 'leader'].includes(role)) throw errors.validation('role must be member or leader');
   if (!name || name.trim().length < 2) throw errors.validation('name is required');
-
-  const existing = await findUserByEmail(email);
-  if (existing) {
-    if (existing.last_login_at) throw errors.conflict('An account with that email already exists — sign in instead');
-    if (existing.role !== role) {
-      await query('UPDATE users SET role = $2, name = $3, phone = COALESCE($4, phone) WHERE id = $1', [
-        existing.id,
-        role,
-        name.trim(),
-        phone || null,
-      ]);
-    }
-  } else {
-    await query(
-      `INSERT INTO users (role, email, name, phone) VALUES ($1, $2, $3, $4)`,
-      [role, email, name.trim(), phone || null],
-    );
+  if (!password || String(password).length < 6) {
+    throw errors.validation('Password must be at least 6 characters');
   }
 
-  const otp = await issueOtp(email, 'login');
-  return { email, otpSent: true, ...otp };
-}
-
-/**
- * Issue (or re-issue) a login OTP for an existing account, identified by email
- * or choir member number. The code always goes to the account's registered
- * email; the response only ever exposes a masked hint.
- */
-export async function requestLoginOtp(identifier) {
-  const raw = String(identifier || '').trim();
-  if (raw.length < 3) throw errors.validation('Enter your member number or email');
-  const user = await findUserByIdentifier(raw);
-  // Do not reveal whether the account exists; still rate-limited upstream.
-  if (!user || !user.is_active) return { otpSent: true };
-  const otp = await issueOtp(normaliseEmail(user.email), 'login', user.name);
-  return { otpSent: true, sentTo: maskEmail(user.email), ...otp };
-}
-
-async function issueOtp(email, purpose, name) {
-  const code = String(crypto.randomInt(0, 1_000_000)).padStart(6, '0');
-  const codeHash = await bcrypt.hash(code, 10);
-  const expiresAt = new Date(Date.now() + env.otp.ttlMinutes * 60_000);
-
-  await query(
-    `INSERT INTO auth_otps (email, code_hash, purpose, expires_at) VALUES ($1, $2, $3, $4)`,
-    [email, codeHash, purpose, expiresAt],
-  );
-
-  const mail = otpEmail({ code, name, purpose });
-  await sendMail({ to: email, ...mail });
-
-  if (env.otp.debugLog) {
-    // eslint-disable-next-line no-console
-    console.log(`[otp] ${email} -> ${code} (${purpose})`);
+  if (await findUserByEmail(email)) {
+    throw errors.conflict('An account with that email already exists — sign in instead');
   }
-  // Expose the code in the response only outside production, OR when a
-  // deployment explicitly opts in via OTP_EXPOSE_DEV_CODE (used for a one-off
-  // post-deploy smoke test, then turned back off).
-  return !env.isProd || env.otp.exposeDevCode ? { devCode: code } : {};
-}
+  if (await findUserByPhone(phone)) {
+    throw errors.conflict('An account with that phone number already exists — sign in instead');
+  }
 
-/**
- * Verify an OTP and start a session. `identifier` (or the legacy `email`) may be
- * an email or a choir member number — it is resolved to the account whose
- * registered email received the code. Returns { user, accessToken, refreshToken }.
- */
-export async function verifyOtp({ email, identifier, code, userAgent }) {
-  if (!/^\d{6}$/.test(String(code || ''))) throw errors.validation('Enter the 6-digit code');
-
-  const user = await findUserByIdentifier(identifier || email);
-  if (!user || !user.is_active) throw errors.unauthorized('Account not found or disabled');
-  const otpEmailAddr = normaliseEmail(user.email);
-
+  const passwordHash = await bcrypt.hash(String(password), 10);
   const { rows } = await query(
-    `SELECT * FROM auth_otps
-       WHERE lower(email) = lower($1) AND consumed_at IS NULL
-       ORDER BY created_at DESC LIMIT 1`,
-    [otpEmailAddr],
+    `INSERT INTO users (role, email, name, phone, password_hash, is_active)
+     VALUES ($1, $2, $3, $4, $5, true) RETURNING *`,
+    [role, email, name.trim(), phone, passwordHash],
   );
-  const otp = rows[0];
-  if (!otp) throw errors.badRequest('No pending code — request a new one');
-  if (new Date(otp.expires_at) < new Date()) throw errors.badRequest('That code has expired — request a new one');
-  if (otp.attempts >= env.otp.maxAttempts) {
-    throw errors.tooMany('Too many incorrect attempts — request a new code');
+  return startSession(rows[0], userAgent);
+}
+
+/** Sign in with an email or phone number plus password. */
+export async function login({ identifier, password, userAgent }) {
+  const raw = String(identifier || '').trim();
+  if (!raw) throw errors.validation('Enter your email or phone number');
+  if (!password) throw errors.validation('Enter your password');
+
+  const user = await findUserByIdentifier(raw);
+  if (!user || !user.is_active || !user.password_hash) {
+    await bcrypt.compare(String(password), DUMMY_HASH);
+    throw errors.unauthorized('Incorrect email/phone or password');
   }
 
-  const match = await bcrypt.compare(String(code), otp.code_hash);
-  if (!match) {
-    await query('UPDATE auth_otps SET attempts = attempts + 1 WHERE id = $1', [otp.id]);
-    throw errors.badRequest('Incorrect code');
-  }
+  const match = await bcrypt.compare(String(password), user.password_hash);
+  if (!match) throw errors.unauthorized('Incorrect email/phone or password');
 
-  const fresh = (await findUserById(user.id)) || user;
-  return startSession(fresh, userAgent, async (client) => {
-    await client.query('UPDATE auth_otps SET consumed_at = now() WHERE id = $1', [otp.id]);
-  });
+  return startSession(user, userAgent);
 }
 
 /**
  * Create a login session for a user: mark last_login_at, mint a refresh token,
  * and return { user, accessToken, refreshToken, refreshExpiresAt }.
- * `extra(client)` runs inside the same transaction (e.g. consume an OTP).
  */
-async function startSession(user, userAgent, extra) {
+async function startSession(user, userAgent) {
   const tx = await withTransaction(async (client) => {
-    if (extra) await extra(client);
     await client.query('UPDATE users SET last_login_at = now() WHERE id = $1', [user.id]);
     const { raw, hash } = generateRefreshToken();
     const expiresAt = refreshTokenExpiry();

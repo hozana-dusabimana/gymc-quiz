@@ -3,7 +3,6 @@ import supertest from 'supertest';
 // Force deterministic grading in CI (no external AI calls) unless explicitly enabled.
 if (!process.env.RUN_AI_TESTS) process.env.OPENROUTER_API_KEY = '';
 process.env.STORAGE_DRIVER = 'local';
-process.env.MIS_SSO_SECRET = process.env.MIS_SSO_SECRET || 'test-mis-sso-secret';
 
 const { createApp } = await import('../src/app.js');
 export const app = createApp();
@@ -14,17 +13,25 @@ export function uniqueEmail(role = 'user') {
   seq += 1;
   return `${role}.${Date.now()}.${seq}@vitest.local`;
 }
+export function uniquePhone() {
+  seq += 1;
+  return `07${String(Date.now()).slice(-8)}${String(seq).padStart(2, '0')}`;
+}
+
+export const DEFAULT_PASSWORD = 'Vitest@1234';
 
 export async function signup(role = 'member', name = `Test ${role}`) {
   const email = uniqueEmail(role);
-  const reg = await request.post('/api/auth/register').send({ name, email, role });
-  const code = reg.body?.data?.devCode;
-  const login = await request.post('/api/auth/verify-otp').send({ email, code });
+  const phone = uniquePhone();
+  const reg = await request
+    .post('/api/auth/register')
+    .send({ name, email, phone, role, password: DEFAULT_PASSWORD });
   return {
     email,
-    token: login.body?.data?.accessToken,
-    user: login.body?.data?.user,
-    cookie: login.headers['set-cookie'],
+    phone,
+    token: reg.body?.data?.accessToken,
+    user: reg.body?.data?.user,
+    cookie: reg.headers['set-cookie'],
   };
 }
 

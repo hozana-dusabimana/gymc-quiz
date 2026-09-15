@@ -1,39 +1,73 @@
 import { describe, it, expect } from 'vitest';
-import { request, signup, uniqueEmail, auth } from './helpers.js';
-import { query } from '../src/db/pool.js';
+import { request, signup, uniqueEmail, uniquePhone, auth, DEFAULT_PASSWORD } from './helpers.js';
 
 describe('auth', () => {
-  it('registers a user and issues an OTP', async () => {
+  it('registers a user with name/phone/email/password and logs them straight in', async () => {
     const email = uniqueEmail('leader');
-    const res = await request.post('/api/auth/register').send({ name: 'Ada L', email, role: 'leader' });
+    const phone = uniquePhone();
+    const res = await request
+      .post('/api/auth/register')
+      .send({ name: 'Ada L', email, phone, role: 'leader', password: DEFAULT_PASSWORD });
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.otpSent).toBe(true);
-    expect(res.body.data.devCode).toMatch(/^\d{6}$/);
+    expect(res.body.data.accessToken).toBeTruthy();
+    expect(res.body.data.user.role).toBe('leader');
+    expect(res.body.data.user.email).toBe(email.toLowerCase());
+    expect(res.headers['set-cookie']?.join()).toMatch(/gymc_rt=/);
   });
 
   it('rejects invalid registration payloads', async () => {
-    const res = await request.post('/api/auth/register').send({ name: 'x', email: 'nope', role: 'admin' });
+    const res = await request
+      .post('/api/auth/register')
+      .send({ name: 'x', email: 'nope', role: 'admin', phone: '123', password: '123' });
     expect(res.status).toBe(422);
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('rejects a wrong OTP and accepts the right one', async () => {
+  it('rejects registration missing a password or phone', async () => {
     const email = uniqueEmail('member');
-    const reg = await request.post('/api/auth/register').send({ name: 'Bo Bo', email, role: 'member' });
-    const bad = await request.post('/api/auth/verify-otp').send({ email, code: '000000' });
-    expect(bad.status).toBe(400);
-    const good = await request.post('/api/auth/verify-otp').send({ email, code: reg.body.data.devCode });
-    expect(good.status).toBe(200);
-    expect(good.body.data.accessToken).toBeTruthy();
-    expect(good.body.data.user.role).toBe('member');
-    expect(good.headers['set-cookie']?.join()).toMatch(/gymc_rt=/);
+    const res = await request
+      .post('/api/auth/register')
+      .send({ name: 'No Pass', email, role: 'member' });
+    expect(res.status).toBe(422);
   });
 
-  it('does not allow re-registering an active account', async () => {
+  it('does not allow re-registering an active email or phone', async () => {
     const s = await signup('member');
-    const res = await request.post('/api/auth/register').send({ name: 'Dup', email: s.email, role: 'member' });
-    expect(res.status).toBe(409);
+    const byEmail = await request
+      .post('/api/auth/register')
+      .send({ name: 'Dup', email: s.email, phone: uniquePhone(), role: 'member', password: DEFAULT_PASSWORD });
+    expect(byEmail.status).toBe(409);
+    const byPhone = await request
+      .post('/api/auth/register')
+      .send({ name: 'Dup', email: uniqueEmail('member'), phone: s.phone, role: 'member', password: DEFAULT_PASSWORD });
+    expect(byPhone.status).toBe(409);
+  });
+
+  it('logs in with email + password', async () => {
+    const s = await signup('member');
+    const res = await request.post('/api/auth/login').send({ identifier: s.email, password: DEFAULT_PASSWORD });
+    expect(res.status).toBe(200);
+    expect(res.body.data.accessToken).toBeTruthy();
+    expect(res.body.data.user.email).toBe(s.email.toLowerCase());
+  });
+
+  it('logs in with phone + password', async () => {
+    const s = await signup('leader');
+    const res = await request.post('/api/auth/login').send({ identifier: s.phone, password: DEFAULT_PASSWORD });
+    expect(res.status).toBe(200);
+    expect(res.body.data.user.role).toBe('leader');
+  });
+
+  it('rejects a wrong password', async () => {
+    const s = await signup('member');
+    const res = await request.post('/api/auth/login').send({ identifier: s.email, password: 'WrongPass1' });
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects login for an unknown identifier without revealing it', async () => {
+    const res = await request.post('/api/auth/login').send({ identifier: 'ghost@nowhere.local', password: 'whatever1' });
+    expect(res.status).toBe(401);
   });
 
   it('/api/auth/me requires a token and returns the user', async () => {
@@ -50,48 +84,5 @@ describe('auth', () => {
     const res = await request.post('/api/auth/refresh').set('Cookie', s.cookie);
     expect(res.status).toBe(200);
     expect(res.body.data.accessToken).toBeTruthy();
-  });
-
-  it('does not reveal whether an email exists on request-otp', async () => {
-    const res = await request.post('/api/auth/request-otp').send({ email: 'ghost@nowhere.local' });
-    expect(res.status).toBe(200);
-    expect(res.body.data.otpSent).toBe(true);
-  });
-
-  it('signs in with a member registration number instead of email', async () => {
-    const email = uniqueEmail('regno');
-    const reg = await request.post('/api/auth/register').send({ name: 'Reg Member', email, role: 'member' });
-    await request.post('/api/auth/verify-otp').send({ email, code: reg.body.data.devCode });
-
-    const regNo = `2${String(Date.now()).slice(-5)}/2024`;
-    await query('UPDATE users SET member_number = $2 WHERE lower(email) = lower($1)', [email, regNo]);
-
-    const otp = await request.post('/api/auth/request-otp').send({ identifier: regNo });
-    expect(otp.status).toBe(200);
-    expect(otp.body.data.otpSent).toBe(true);
-    // the real address is never echoed back — only a masked hint
-    expect(otp.body.data.sentTo).toContain('@');
-    expect(otp.body.data.sentTo).not.toBe(email.toLowerCase());
-    expect(otp.body.data.devCode).toMatch(/^\d{6}$/);
-
-    // verify by the numeric stem of the reg number too
-    const login = await request
-      .post('/api/auth/verify-otp')
-      .send({ identifier: regNo.split('/')[0], code: otp.body.data.devCode });
-    expect(login.status).toBe(200);
-    expect(login.body.data.user.email).toBe(email.toLowerCase());
-    expect(login.body.data.accessToken).toBeTruthy();
-  });
-
-  it('does not reveal whether a registration number exists', async () => {
-    const res = await request.post('/api/auth/request-otp').send({ identifier: '00000/1900' });
-    expect(res.status).toBe(200);
-    expect(res.body.data.otpSent).toBe(true);
-    expect(res.body.data.sentTo).toBeUndefined();
-  });
-
-  it('rejects request-otp with neither identifier nor email', async () => {
-    const res = await request.post('/api/auth/request-otp').send({});
-    expect(res.status).toBe(422);
   });
 });
