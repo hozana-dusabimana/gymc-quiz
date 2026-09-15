@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { ok } from '../utils/response.js';
+import { ok, errors } from '../utils/response.js';
 import { validate } from '../middleware/validate.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireRole } from '../middleware/auth.js';
 import { query } from '../db/pool.js';
-import { publicUser, findUserById } from '../services/auth.service.js';
+import { publicUser, findUserById, updateUser } from '../services/auth.service.js';
 import {
   performanceIndex,
   streakLabel,
@@ -150,6 +150,83 @@ router.get(
         trends: { averageScore: avgTrend },
       },
     });
+  }),
+);
+
+// GET /api/users/members — every choir member, with enrolment/attempt stats (leader/admin)
+router.get(
+  '/members',
+  requireRole('leader', 'admin'),
+  asyncHandler(async (req, res) => {
+    const { rows } = await query(
+      `SELECT u.*,
+              (SELECT count(*) FROM enrollments e WHERE e.member_id = u.id) AS courses_count,
+              (SELECT count(*) FROM quiz_attempts a WHERE a.member_id = u.id AND a.status = 'completed') AS quizzes_taken,
+              (SELECT round(avg(a.percentage)::numeric, 1) FROM quiz_attempts a
+                WHERE a.member_id = u.id AND a.status = 'completed') AS avg_score
+         FROM users u
+        WHERE u.role = 'member'
+        ORDER BY u.created_at DESC`,
+    );
+    ok(res, {
+      members: rows.map((r) => ({
+        ...publicUser(r),
+        coursesCount: Number(r.courses_count),
+        quizzesTaken: Number(r.quizzes_taken),
+        averageScore: r.avg_score != null ? Number(r.avg_score) : null,
+      })),
+    });
+  }),
+);
+
+// GET /api/users/members/:id — full detail for one member (leader/admin)
+router.get(
+  '/members/:id',
+  requireRole('leader', 'admin'),
+  asyncHandler(async (req, res) => {
+    const target = await findUserById(req.params.id);
+    if (!target || target.role !== 'member') throw errors.notFound('Member not found');
+    const { rows } = await query(
+      `SELECT c.id, c.code, c.title, e.created_at AS enrolled_at,
+              (SELECT round(avg(a.percentage)::numeric, 1) FROM quiz_attempts a
+                 JOIN quizzes z ON z.id = a.quiz_id
+                WHERE z.course_id = c.id AND a.member_id = $1 AND a.status = 'completed') AS avg_score
+         FROM enrollments e JOIN courses c ON c.id = e.course_id
+        WHERE e.member_id = $1
+        ORDER BY e.created_at DESC`,
+      [req.params.id],
+    );
+    ok(res, {
+      member: publicUser(target),
+      courses: rows.map((r) => ({
+        id: r.id,
+        code: r.code,
+        title: r.title,
+        enrolledAt: r.enrolled_at,
+        averageScore: r.avg_score != null ? Number(r.avg_score) : null,
+      })),
+    });
+  }),
+);
+
+const memberUpdateSchema = z.object({
+  name: z.string().min(2).max(120).optional(),
+  email: z.string().email().max(160).optional(),
+  phone: z.string().min(6).max(40).optional(),
+  memberNumber: z.string().max(60).nullable().optional(),
+  isActive: z.boolean().optional(),
+});
+
+// PATCH /api/users/members/:id — edit or deactivate/reactivate a member (leader/admin)
+router.patch(
+  '/members/:id',
+  requireRole('leader', 'admin'),
+  validate(memberUpdateSchema),
+  asyncHandler(async (req, res) => {
+    const target = await findUserById(req.params.id);
+    if (!target || target.role !== 'member') throw errors.notFound('Member not found');
+    const user = await updateUser(req.params.id, req.body, ['name', 'email', 'phone', 'memberNumber', 'isActive']);
+    ok(res, { user });
   }),
 );
 

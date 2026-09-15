@@ -28,10 +28,12 @@ const SCREENS: Record<UserRole, Screen[]> = {
     { to: '/leader/questions', label: 'Question Bank', icon: 'help_outline', keywords: 'mcq true false short answer generate ai' },
     { to: '/leader/quizzes/new', label: 'Quiz Studio', icon: 'edit_note', keywords: 'create build publish wizard' },
     { to: '/leader/analytics', label: 'Analytics & Grades', icon: 'query_stats', keywords: 'submissions marking review scores stats' },
+    { to: '/members', label: 'Members', icon: 'groups', keywords: 'manage edit deactivate choir members' },
     { to: '/profile', label: 'Manage profile', icon: 'person', keywords: 'account settings name' },
   ],
   admin: [
     { to: '/admin', label: 'Leaders & Admins', icon: 'admin_panel_settings', end: true, keywords: 'create manage staff accounts' },
+    { to: '/members', label: 'Members', icon: 'groups', keywords: 'manage edit deactivate choir members' },
     { to: '/profile', label: 'Manage profile', icon: 'person', keywords: 'account settings name' },
   ],
 };
@@ -124,7 +126,7 @@ export function JumpToScreen() {
         className="flex items-center gap-1.5 pl-2 pr-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-50 transition-colors"
         title="Jump to any screen"
       >
-        <span className="material-symbols-outlined text-[18px] text-blue-600">grid_view</span>
+        <span className="material-symbols-outlined text-[18px] text-amber-600">grid_view</span>
         <span className="hidden sm:inline">Jump to Screen</span>
         <span className="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
       </button>
@@ -164,18 +166,18 @@ export function JumpToScreen() {
                     onMouseEnter={() => setActive(i)}
                     className={`w-full text-left px-3 py-2 rounded-lg flex items-center gap-2.5 text-xs transition-colors ${
                       i === active ? 'bg-slate-100' : ''
-                    } ${current ? 'text-blue-700 font-bold' : 'text-slate-700 font-medium'}`}
+                    } ${current ? 'text-amber-700 font-bold' : 'text-slate-700 font-medium'}`}
                   >
                     <span
                       className={`material-symbols-outlined text-[19px] ${
-                        current ? 'text-blue-600' : 'text-slate-400'
+                        current ? 'text-amber-600' : 'text-slate-400'
                       }`}
                     >
                       {s.icon}
                     </span>
                     <span className="flex-1">{s.label}</span>
                     {current && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-blue-500">Here</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Here</span>
                     )}
                   </button>
                 );

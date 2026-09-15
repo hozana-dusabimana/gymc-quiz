@@ -51,7 +51,7 @@ export function CourseWorkspacePage() {
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-blue-100 text-blue-800">{c.code}</span>
+              <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-amber-100 text-amber-800">{c.code}</span>
               {c.department && <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">{c.department}</span>}
             </div>
             <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">{c.title}</h1>
@@ -62,9 +62,9 @@ export function CourseWorkspacePage() {
           {isLeader && (
             <div className="flex items-center gap-2.5 shrink-0">
               <Link to={`/leader/materials?courseId=${c.id}`} className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-base text-blue-600">upload</span> Upload
+                <span className="material-symbols-outlined text-base text-amber-600">upload</span> Upload
               </Link>
-              <Link to={`/leader/quizzes/new?courseId=${c.id}`} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
+              <Link to={`/leader/quizzes/new?courseId=${c.id}`} className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-base">add</span> Create quiz
               </Link>
             </div>
@@ -100,7 +100,7 @@ export function CourseWorkspacePage() {
               key={id}
               onClick={() => setTab(id)}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
-                tab === id ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'text-slate-600 hover:bg-slate-100'
+                tab === id ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
               <span className="material-symbols-outlined text-base">{icon}</span>
@@ -129,7 +129,7 @@ export function CourseWorkspacePage() {
           render={(m) => (
             <div key={m.id} className="p-4 rounded-xl border border-slate-200 flex items-center justify-between gap-3 bg-white">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-mono font-bold text-[10px]">
+                <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-mono font-bold text-[10px]">
                   {m.fileType.toUpperCase()}
                 </div>
                 <div className="min-w-0">
@@ -184,12 +184,12 @@ export function CourseWorkspacePage() {
               {isLeader ? (
                 <button
                   onClick={() => navigate(`/leader/quizzes/${z.id}/analytics`)}
-                  className="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold shrink-0"
+                  className="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl text-xs font-bold shrink-0"
                 >
                   Analytics
                 </button>
               ) : z.availability?.open ? (
-                <Link to={`/member/quizzes/${z.id}`} className="px-3.5 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-bold shrink-0">
+                <Link to={`/member/quizzes/${z.id}`} className="px-3.5 py-1.5 bg-amber-600 text-white rounded-xl text-xs font-bold shrink-0">
                   Start
                 </Link>
               ) : (
@@ -208,7 +208,7 @@ export function CourseWorkspacePage() {
             </h2>
             <button
               onClick={() => setShowEnroll(true)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
             >
               <span className="material-symbols-outlined text-base">person_add</span>
               Add member
@@ -336,7 +336,7 @@ function EnrollModal({
           <button
             type="submit"
             disabled={enroll.loading}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl font-bold flex items-center gap-2"
+            className="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white rounded-xl font-bold flex items-center gap-2"
           >
             {enroll.loading && <Spinner />}
             Enrol

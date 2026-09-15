@@ -77,7 +77,7 @@ export function MaterialsPage() {
           e.preventDefault();
           if (e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]);
         }}
-        className="rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50/40 hover:bg-blue-50/70 transition-all p-8 text-center"
+        className="rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/40 hover:bg-amber-50/70 transition-all p-8 text-center"
       >
         <input
           ref={fileRef}
@@ -88,18 +88,18 @@ export function MaterialsPage() {
         />
         {upload.loading ? (
           <div className="flex flex-col items-center gap-2 py-2">
-            <Spinner className="w-6 h-6 text-blue-600" />
+            <Spinner className="w-6 h-6 text-amber-600" />
             <p className="text-xs font-semibold text-slate-700">Uploading…</p>
           </div>
         ) : (
           <div className="max-w-md mx-auto space-y-3">
-            <div className="w-14 h-14 rounded-2xl bg-white text-blue-600 mx-auto flex items-center justify-center shadow-md shadow-blue-500/10 border border-blue-100">
+            <div className="w-14 h-14 rounded-2xl bg-white text-amber-600 mx-auto flex items-center justify-center shadow-md shadow-amber-500/10 border border-amber-100">
               <span className="material-symbols-outlined text-3xl">cloud_upload</span>
             </div>
             <h3 className="text-base font-bold text-slate-900">Drag &amp; drop a document, or</h3>
             <button
               onClick={() => fileRef.current?.click()}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold"
             >
               <span className="material-symbols-outlined text-base">folder_open</span> Browse files
             </button>
@@ -158,7 +158,7 @@ export function MaterialsPage() {
                 <button
                   disabled={mat.status !== 'ready'}
                   onClick={() => setGenFor(mat)}
-                  className="flex-1 py-2 bg-slate-50 hover:bg-blue-50 disabled:opacity-40 text-blue-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2 bg-slate-50 hover:bg-amber-50 disabled:opacity-40 text-amber-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
                 >
                   <span className="material-symbols-outlined text-sm">auto_awesome</span>
                   Generate questions
@@ -166,7 +166,7 @@ export function MaterialsPage() {
                 {mat.status === 'failed' && (
                   <button
                     onClick={() => Materials.reprocess(mat.id).then(() => materials.refetch())}
-                    className="p-2 text-slate-500 hover:text-blue-600 border border-slate-200 rounded-xl"
+                    className="p-2 text-slate-500 hover:text-amber-600 border border-slate-200 rounded-xl"
                     title="Retry"
                   >
                     <span className="material-symbols-outlined text-sm">refresh</span>
@@ -242,7 +242,7 @@ function GenerateQuestionsModal({
           <button
             onClick={run}
             disabled={gen.loading}
-            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center gap-2"
+            className="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center gap-2"
           >
             {gen.loading && <Spinner />}
             Generate

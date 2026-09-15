@@ -30,7 +30,7 @@ export function LeaderDashboardPage() {
           <>
             <button
               onClick={() => navigate('/leader/quizzes/new')}
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2"
+              className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white rounded-xl font-bold text-xs shadow-md shadow-amber-500/25 transition-all flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-base">add_circle</span>
               Create quiz
@@ -39,14 +39,14 @@ export function LeaderDashboardPage() {
               to="/leader/materials"
               className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-bold text-xs shadow-xs transition-all flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-base text-blue-600">upload_file</span>
+              <span className="material-symbols-outlined text-base text-amber-600">upload_file</span>
               Upload material
             </Link>
             <Link
               to="/leader/questions"
               className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-bold text-xs shadow-xs transition-all flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-base text-purple-600">help_outline</span>
+              <span className="material-symbols-outlined text-base text-amber-600">help_outline</span>
               Question bank
             </Link>
           </>
@@ -64,14 +64,14 @@ export function LeaderDashboardPage() {
               label="Total courses"
               value={s?.courses ?? 0}
               icon="school"
-              tone="blue"
+              tone="gold"
             />
             <StatCard
               label="Active quizzes"
               value={s?.activeQuizzes ?? 0}
               hint={s?.quizzesClosingSoon ? `${s.quizzesClosingSoon} closing in 48h` : undefined}
               icon="assignment"
-              tone="indigo"
+              tone="amber"
             />
             <StatCard
               label="Choir members"
@@ -99,12 +99,12 @@ export function LeaderDashboardPage() {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <span className="material-symbols-outlined text-indigo-600">quiz</span>
+              <span className="material-symbols-outlined text-amber-600">quiz</span>
               Published &amp; active assessments
             </h2>
             <button
               onClick={() => navigate('/leader/quizzes/new')}
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+              className="text-xs font-semibold text-amber-600 hover:text-amber-700"
             >
               + New quiz
             </button>
@@ -120,7 +120,7 @@ export function LeaderDashboardPage() {
               action={
                 <button
                   onClick={() => navigate('/leader/quizzes/new')}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold"
+                  className="px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-bold"
                 >
                   Create quiz
                 </button>
@@ -137,7 +137,7 @@ export function LeaderDashboardPage() {
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-mono">
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-mono">
                         {quiz.courseCode}
                       </span>
                       <StatusPill status={quiz.status} />
@@ -147,7 +147,7 @@ export function LeaderDashboardPage() {
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => navigate(`/leader/quizzes/${quiz.id}/analytics`)}
-                      className="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
+                      className="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
                     >
                       <span className="material-symbols-outlined text-sm">query_stats</span>
                       Analytics
@@ -180,7 +180,7 @@ export function LeaderDashboardPage() {
         <div className="space-y-4">
           <div>
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-3">
-              <span className="material-symbols-outlined text-blue-600">bolt</span>
+              <span className="material-symbols-outlined text-amber-600">bolt</span>
               Recent submissions
             </h2>
             {overview.loading && <LoadingState className="py-6" />}
@@ -199,7 +199,7 @@ export function LeaderDashboardPage() {
                   <Link
                     key={sub.id}
                     to={`/leader/results/${sub.id}`}
-                    className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 transition-all"
+                    className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-slate-200 hover:border-amber-300 transition-all"
                   >
                     {sub.memberAvatar ? (
                       <img src={sub.memberAvatar} alt="" className="w-8 h-8 rounded-full object-cover" />
@@ -233,10 +233,10 @@ export function LeaderDashboardPage() {
           </div>
 
           {overview.data?.syllabusInsight && (
-            <div className="bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-2xl p-5 shadow-md space-y-3">
+            <div className="bg-gradient-to-br from-amber-800 via-amber-900 to-slate-950 text-white rounded-2xl p-5 shadow-md space-y-3">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-amber-400">auto_awesome</span>
-                <h3 className="font-bold text-xs uppercase tracking-wider text-indigo-200">Material insight</h3>
+                <h3 className="font-bold text-xs uppercase tracking-wider text-amber-200">Material insight</h3>
               </div>
               <p className="text-xs text-slate-200 leading-relaxed">
                 From your recent material{' '}
@@ -251,7 +251,7 @@ export function LeaderDashboardPage() {
               </p>
               <Link
                 to="/leader/questions?aiGenerated=true"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-200 hover:text-white"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-200 hover:text-white"
               >
                 Review in question bank
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -261,7 +261,7 @@ export function LeaderDashboardPage() {
 
           <div>
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-3">
-              <span className="material-symbols-outlined text-blue-600">school</span>
+              <span className="material-symbols-outlined text-amber-600">school</span>
               Your courses
             </h2>
             {courses.loading && <LoadingState className="py-8" />}
@@ -272,7 +272,7 @@ export function LeaderDashboardPage() {
                 description="Create a course to get started."
                 className="border-0 py-6"
                 action={
-                  <Link to="/leader/courses" className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold">
+                  <Link to="/leader/courses" className="px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-bold">
                     Go to courses
                   </Link>
                 }

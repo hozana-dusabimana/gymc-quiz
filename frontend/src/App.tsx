@@ -6,6 +6,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { HomePage } from './pages/HomePage';
 import { TermsPage, PrivacyPage } from './pages/PolicyPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
+import { MembersPage } from './pages/MembersPage';
 
 import { MemberDashboardPage } from './pages/MemberDashboardPage';
 import { LeaderDashboardPage } from './pages/LeaderDashboardPage';
@@ -35,12 +36,13 @@ function homePath(user: User): string {
   return '/leader';
 }
 
-function RequireAuth({ role, children }: { role?: UserRole; children: ReactElement }) {
+function RequireAuth({ role, children }: { role?: UserRole | UserRole[]; children: ReactElement }) {
   const { user, loading } = useAuth();
   const location = useLocation();
   if (loading) return <LoadingState label="Loading your workspace…" className="min-h-screen" />;
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
-  if (role && user.role !== role) {
+  const allowed = role == null || (Array.isArray(role) ? role.includes(user.role) : user.role === role);
+  if (!allowed) {
     return <Navigate to={homePath(user)} replace />;
   }
   return children;
@@ -132,6 +134,7 @@ export default function App() {
         <Route path="/admin" element={<RequireAuth role="admin"><AdminDashboardPage /></RequireAuth>} />
 
         {/* shared */}
+        <Route path="/members" element={<RequireAuth role={['leader', 'admin']}><MembersPage /></RequireAuth>} />
         <Route path="/courses/:courseId" element={<CourseWorkspacePage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>

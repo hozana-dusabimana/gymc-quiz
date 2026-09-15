@@ -20,7 +20,7 @@ export function AnalyticsPage() {
   const { quizzes, distribution: d, hardestQuestions } = data;
   const bands = [
     { label: '90–100% (A)', count: d.a, tone: 'bg-emerald-500' },
-    { label: '75–89% (B)', count: d.b, tone: 'bg-blue-500' },
+    { label: '75–89% (B)', count: d.b, tone: 'bg-amber-500' },
     { label: '60–74% (C)', count: d.c, tone: 'bg-amber-500' },
     { label: '< 60% (needs review)', count: d.d, tone: 'bg-rose-500' },
   ].map((b) => ({ ...b, percent: d.total ? Math.round((b.count / d.total) * 100) : 0 }));
@@ -56,7 +56,7 @@ export function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
           <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <span className="material-symbols-outlined text-indigo-600">bar_chart</span>
+            <span className="material-symbols-outlined text-amber-600">bar_chart</span>
             Score distribution — all assessments
           </h2>
           {d.total === 0 ? (
@@ -80,10 +80,10 @@ export function AnalyticsPage() {
           )}
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-2xl p-6 shadow-md space-y-4">
+        <div className="bg-gradient-to-br from-amber-900 to-slate-900 text-white rounded-2xl p-6 shadow-md space-y-4">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-amber-400">psychology</span>
-            <h3 className="font-bold text-sm text-indigo-200">Lowest-accuracy questions</h3>
+            <h3 className="font-bold text-sm text-amber-200">Lowest-accuracy questions</h3>
           </div>
           {hardestQuestions.length === 0 ? (
             <p className="text-xs text-slate-300">Not enough data yet.</p>
@@ -92,7 +92,7 @@ export function AnalyticsPage() {
               {hardestQuestions.slice(0, 3).map((q) => (
                 <div key={q.id} className="p-3 rounded-xl bg-white/10 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] text-indigo-200">{q.courseCode}</span>
+                    <span className="font-mono text-[10px] text-amber-200">{q.courseCode}</span>
                     <span
                       className={`font-bold ${
                         (q.accuracy ?? 0) < 50 ? 'text-rose-300' : 'text-amber-300'
@@ -114,7 +114,7 @@ export function AnalyticsPage() {
 
       <div className="space-y-3">
         <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-          <span className="material-symbols-outlined text-indigo-600">quiz</span>
+          <span className="material-symbols-outlined text-amber-600">quiz</span>
           Per-assessment
         </h2>
         {quizzes.length === 0 && (
@@ -123,7 +123,7 @@ export function AnalyticsPage() {
             title="No assessments yet"
             description="Create a quiz to start seeing analytics."
             action={
-              <Link to="/leader/quizzes/new" className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">
+              <Link to="/leader/quizzes/new" className="px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-bold">
                 Create quiz
               </Link>
             }
@@ -133,12 +133,12 @@ export function AnalyticsPage() {
           <Link
             key={quiz.id}
             to={`/leader/quizzes/${quiz.id}/analytics`}
-            className="block bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-indigo-400 transition-all"
+            className="block bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-amber-400 transition-all"
           >
             <div className="flex items-center justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-mono">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-mono">
                     {quiz.courseCode}
                   </span>
                   <StatusPill status={quiz.status} />

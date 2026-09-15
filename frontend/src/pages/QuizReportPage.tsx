@@ -61,7 +61,7 @@ export function QuizReportPage() {
       <div className="no-print sticky top-0 z-10 flex items-center justify-between gap-3 bg-white border-b border-slate-200 px-4 py-3">
         <button
           onClick={() => navigate(`/leader/quizzes/${quizId}/analytics`)}
-          className="flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-indigo-600"
+          className="flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-amber-600"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span> Back to quiz analytics
         </button>
@@ -74,7 +74,7 @@ export function QuizReportPage() {
           </button>
           <button
             onClick={() => window.print()}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
           >
             <span className="material-symbols-outlined text-base">print</span> Print / Save as PDF
           </button>
@@ -85,7 +85,7 @@ export function QuizReportPage() {
         {/* ---- header ---- */}
         <header className="flex items-start justify-between gap-6 border-b-2 border-slate-900 pb-4">
           <div className="flex items-start gap-3">
-            <div className="w-12 h-12 rounded-xl bg-indigo-700 text-white flex items-center justify-center font-extrabold text-lg shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-amber-700 text-white flex items-center justify-center font-extrabold text-lg shrink-0">
               U
             </div>
             <div>
@@ -93,7 +93,7 @@ export function QuizReportPage() {
                 {data.institution.name}
               </h1>
               <p className="text-xs text-slate-500 font-semibold">{data.institution.system}</p>
-              <p className="mt-2 text-sm font-bold text-indigo-700 uppercase tracking-wide">
+              <p className="mt-2 text-sm font-bold text-amber-700 uppercase tracking-wide">
                 Quiz Marks Sheet
               </p>
             </div>
@@ -184,7 +184,7 @@ export function QuizReportPage() {
                     <Td className="text-right">{b.percent}%</Td>
                     <Td>
                       <span
-                        className="inline-block h-2 rounded-full bg-indigo-600 align-middle"
+                        className="inline-block h-2 rounded-full bg-amber-600 align-middle"
                         style={{ width: `${b.percent}%` }}
                       />
                     </Td>

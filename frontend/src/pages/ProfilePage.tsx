@@ -74,7 +74,7 @@ export function ProfilePage() {
           <button
             type="submit"
             disabled={save.loading}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center gap-2"
+            className="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center gap-2"
           >
             {save.loading && <Spinner />}
             Save changes

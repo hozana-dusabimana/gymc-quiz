@@ -25,12 +25,12 @@ export function ResultsPage() {
             <Link
               key={r.id}
               to={`/member/results/${r.id}`}
-              className="block bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-blue-400 transition-all"
+              className="block bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-amber-400 transition-all"
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-mono">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-mono">
                       {r.courseCode}
                     </span>
                     <span

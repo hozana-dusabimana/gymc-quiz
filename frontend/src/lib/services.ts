@@ -155,19 +155,50 @@ export const Users = {
   stats: <T = MemberStats | LeaderStats>() => http.get<{ stats: T }>('/users/me/stats').then((r) => r.stats),
 };
 
-// ---- admin (create/list leader & admin accounts) ----
+// ---- admin (create/list/edit leader & admin accounts) ----
 export interface StaffUser {
   id: string;
   role: 'leader' | 'admin';
   name: string;
   email: string;
   phone: string | null;
+  isActive: boolean;
+  coursesCount: number;
   createdAt: string;
+  lastLoginAt: string | null;
 }
 export const Admin = {
   list: () => http.get<{ users: StaffUser[] }>('/admin/users').then((r) => r.users),
   create: (body: { name: string; email: string; phone: string; password: string; role: 'leader' | 'admin' }) =>
     http.post<{ user: StaffUser }>('/admin/users', body).then((r) => r.user),
+  update: (id: string, body: Partial<{ name: string; email: string; phone: string; role: 'leader' | 'admin'; isActive: boolean }>) =>
+    http.patch<{ user: StaffUser }>(`/admin/users/${id}`, body).then((r) => r.user),
+};
+
+// ---- members (list/edit choir members — leader or admin) ----
+export interface MemberUser {
+  id: string;
+  role: 'member';
+  name: string;
+  email: string;
+  phone: string | null;
+  memberNumber: string | null;
+  isActive: boolean;
+  coursesCount: number;
+  quizzesTaken: number;
+  averageScore: number | null;
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+export interface MemberDetail {
+  member: MemberUser;
+  courses: { id: string; code: string; title: string; enrolledAt: string; averageScore: number | null }[];
+}
+export const Members = {
+  list: () => http.get<{ members: MemberUser[] }>('/users/members').then((r) => r.members),
+  get: (id: string) => http.get<MemberDetail>(`/users/members/${id}`),
+  update: (id: string, body: Partial<{ name: string; email: string; phone: string; memberNumber: string | null; isActive: boolean }>) =>
+    http.patch<{ user: MemberUser }>(`/users/members/${id}`, body).then((r) => r.user),
 };
 
 // ---- notifications ----

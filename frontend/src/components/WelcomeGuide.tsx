@@ -416,14 +416,14 @@ export function WelcomeGuideProvider({ children }: { children: ReactNode }) {
           {steps.map((_, i) => (
             <span
               key={i}
-              className={`h-1.5 flex-1 rounded-full ${i <= step ? 'bg-indigo-600' : 'bg-slate-200'}`}
+              className={`h-1.5 flex-1 rounded-full ${i <= step ? 'bg-amber-600' : 'bg-slate-200'}`}
             />
           ))}
         </div>
       </div>
 
       <div className="px-5 py-4 space-y-3">
-        <div className="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+        <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
           <span className="material-symbols-outlined text-2xl">{current.icon}</span>
         </div>
         <div>
@@ -441,7 +441,7 @@ export function WelcomeGuideProvider({ children }: { children: ReactNode }) {
         {current.cta && (
           <button
             onClick={() => goTo(current.cta!.to)}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 hover:text-amber-700"
           >
             {current.cta.label}
             <span className="material-symbols-outlined text-base">arrow_forward</span>
@@ -464,7 +464,7 @@ export function WelcomeGuideProvider({ children }: { children: ReactNode }) {
           )}
           <button
             onClick={() => (isLast ? close() : setStep((s) => s + 1))}
-            className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-500/20"
+            className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-md shadow-amber-500/20"
           >
             {isLast ? 'Got it' : 'Next'}
           </button>

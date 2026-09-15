@@ -27,7 +27,7 @@ export function QuizzesPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-mono">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-mono">
                       {quiz.courseCode}
                     </span>
                     <StatusPill status={quiz.status} />
@@ -63,7 +63,7 @@ export function QuizzesPage() {
                   {avail?.open ? (
                     <Link
                       to={`/member/quizzes/${quiz.id}`}
-                      className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                      className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
                     >
                       {avail.hasInProgress ? 'Resume' : 'Start'}
                       <span className="material-symbols-outlined text-sm">arrow_forward</span>

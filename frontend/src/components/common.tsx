@@ -33,7 +33,7 @@ export function StatCard({
   value: ReactNode;
   hint?: ReactNode;
   icon: string;
-  tone?: 'blue' | 'indigo' | 'emerald' | 'amber' | 'rose' | 'purple';
+  tone?: 'blue' | 'indigo' | 'emerald' | 'amber' | 'rose' | 'purple' | 'gold';
 }) {
   const tones: Record<string, string> = {
     blue: 'bg-blue-50 text-blue-600',
@@ -42,6 +42,7 @@ export function StatCard({
     amber: 'bg-amber-50 text-amber-600',
     rose: 'bg-rose-50 text-rose-600',
     purple: 'bg-purple-50 text-purple-600',
+    gold: 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white',
   };
   return (
     <div className="p-4 lg:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
@@ -89,7 +90,7 @@ export function Badge({
   tone = 'slate',
 }: {
   children: ReactNode;
-  tone?: 'slate' | 'blue' | 'indigo' | 'emerald' | 'amber' | 'rose';
+  tone?: 'slate' | 'blue' | 'indigo' | 'emerald' | 'amber' | 'rose' | 'gold';
 }) {
   const tones: Record<string, string> = {
     slate: 'bg-slate-100 text-slate-700',
@@ -98,6 +99,7 @@ export function Badge({
     emerald: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
     amber: 'bg-amber-50 text-amber-700 border border-amber-200',
     rose: 'bg-rose-50 text-rose-700 border border-rose-200',
+    gold: 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border border-amber-200',
   };
   return (
     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${tones[tone]}`}>{children}</span>

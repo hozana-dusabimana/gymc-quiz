@@ -45,7 +45,7 @@ export function QuestionBankPage() {
             </Link>
             <button
               onClick={() => setEditing('new')}
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-md shadow-indigo-500/20 flex items-center gap-2"
+              className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs shadow-md shadow-amber-500/20 flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-base">add_circle</span>
               New question
@@ -96,7 +96,7 @@ export function QuestionBankPage() {
           <div key={q.id} className="bg-white rounded-2xl border border-slate-200 p-5 lg:p-6 shadow-xs space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-mono">
+                <span className="text-xs font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-mono">
                   {q.courseCode}
                 </span>
                 <Badge tone={q.difficulty === 'Hard' ? 'rose' : q.difficulty === 'Medium' ? 'amber' : 'emerald'}>
@@ -112,7 +112,7 @@ export function QuestionBankPage() {
                 <span className="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
                   used in {q.quizzesUsedCount}
                 </span>
-                <button onClick={() => setEditing(q)} className="p-1 text-slate-400 hover:text-blue-600 rounded-lg" title="Edit">
+                <button onClick={() => setEditing(q)} className="p-1 text-slate-400 hover:text-amber-600 rounded-lg" title="Edit">
                   <span className="material-symbols-outlined text-sm">edit</span>
                 </button>
                 <button
@@ -178,7 +178,7 @@ export function QuestionBankPage() {
             )}
 
             {q.materialRef && (
-              <div className="pt-2 flex items-center gap-1.5 text-xs text-blue-700 font-medium border-t border-slate-100">
+              <div className="pt-2 flex items-center gap-1.5 text-xs text-amber-700 font-medium border-t border-slate-100">
                 <span className="material-symbols-outlined text-base">auto_stories</span>
                 Source: {q.materialRef.name}
                 {q.materialRef.page ? ` (p.${q.materialRef.page})` : ''}
@@ -294,7 +294,7 @@ function QuestionModal({
             form="question-form"
             type="submit"
             disabled={save.loading || !canSubmitMcq || !courseId}
-            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center gap-2"
+            className="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center gap-2"
           >
             {save.loading && <Spinner />}
             {isEdit ? 'Save changes' : 'Add to bank'}
@@ -345,7 +345,7 @@ function QuestionModal({
                 <button
                   type="button"
                   onClick={() => setCorrectAnswer('')}
-                  className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
+                  className="text-[11px] font-semibold text-amber-600 hover:text-amber-700"
                 >
                   Clear · let AI grade
                 </button>
@@ -425,8 +425,8 @@ function QuestionModal({
         </label>
 
         {keyless && (
-          <div className="flex items-start gap-2 p-3 rounded-xl bg-indigo-50/70 border border-indigo-200 text-[11px] text-indigo-900">
-            <span className="material-symbols-outlined text-sm text-indigo-600">auto_awesome</span>
+          <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-[11px] text-amber-900">
+            <span className="material-symbols-outlined text-sm text-amber-600">auto_awesome</span>
             <span>
               No answer key set. At correction time the AI works out the correct answer from this
               question and your course material, grades each member against it, and shows them the

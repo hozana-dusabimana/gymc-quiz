@@ -130,7 +130,7 @@ export function QuestionImportPage() {
                 key={m}
                 onClick={() => setMode(m)}
                 className={`px-3 py-2 text-xs font-bold border-b-2 -mb-px ${
-                  mode === m ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-400'
+                  mode === m ? 'border-amber-600 text-amber-700' : 'border-transparent text-slate-400'
                 }`}
               >
                 {m === 'file' ? 'Upload a file' : 'Paste text'}
@@ -145,7 +145,7 @@ export function QuestionImportPage() {
                 e.preventDefault();
                 if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
               }}
-              className="rounded-2xl border-2 border-dashed border-indigo-300 bg-indigo-50/40 p-8 text-center"
+              className="rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/40 p-8 text-center"
             >
               <input
                 ref={fileRef}
@@ -154,7 +154,7 @@ export function QuestionImportPage() {
                 accept={ACCEPT}
                 onChange={(e) => e.target.files?.[0] && setFile(e.target.files[0])}
               />
-              <span className="material-symbols-outlined text-3xl text-indigo-600">upload_file</span>
+              <span className="material-symbols-outlined text-3xl text-amber-600">upload_file</span>
               {file ? (
                 <p className="mt-2 font-bold text-slate-900">{file.name}</p>
               ) : (
@@ -162,7 +162,7 @@ export function QuestionImportPage() {
               )}
               <button
                 onClick={() => fileRef.current?.click()}
-                className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold"
+                className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold"
               >
                 <span className="material-symbols-outlined text-base">folder_open</span>
                 {file ? 'Choose a different file' : 'Browse files'}
@@ -197,7 +197,7 @@ export function QuestionImportPage() {
             <button
               onClick={runParse}
               disabled={parse.loading || !effectiveCourse}
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center gap-2"
+              className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center gap-2"
             >
               {parse.loading && <Spinner />}
               {parse.loading ? 'Reading & extracting…' : 'Read & extract questions'}
@@ -328,7 +328,7 @@ function ReviewStage({
 
       <button
         onClick={addBlank}
-        className="w-full py-3 border-2 border-dashed border-slate-300 rounded-2xl text-xs font-bold text-slate-500 hover:border-indigo-400 hover:text-indigo-600 flex items-center justify-center gap-1.5"
+        className="w-full py-3 border-2 border-dashed border-slate-300 rounded-2xl text-xs font-bold text-slate-500 hover:border-amber-400 hover:text-amber-600 flex items-center justify-center gap-1.5"
       >
         <span className="material-symbols-outlined text-base">add</span> Add a question manually
       </button>
@@ -437,7 +437,7 @@ function DraftCard({
           </span>
         )}
         {!d.correctAnswer && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
             AI-graded · no key
           </span>
         )}
@@ -495,7 +495,7 @@ function DraftCard({
             {d.options.length < 8 && (
               <button
                 onClick={() => patch(d.tempId, { options: [...d.options, ''] })}
-                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
+                className="text-[11px] font-semibold text-amber-600 hover:text-amber-700"
               >
                 + Add option
               </button>

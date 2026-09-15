@@ -51,7 +51,7 @@ export function CoursesPage() {
             <button
               onClick={() => setShowCreate(true)}
               data-tour="new-course"
-              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md shadow-blue-500/20 flex items-center gap-2"
+              className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs shadow-md shadow-amber-500/20 flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-base">add_circle</span>
               New course
@@ -80,7 +80,7 @@ export function CoursesPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Filter courses…"
-              className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-100"
             />
             {query && (
               <button
@@ -114,7 +114,7 @@ export function CoursesPage() {
             <Link
               key={course.id}
               to={`/courses/${course.id}`}
-              className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all group flex flex-col justify-between"
+              className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-amber-400 hover:shadow-md transition-all group flex flex-col justify-between"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
@@ -127,7 +127,7 @@ export function CoursesPage() {
                     <span className="material-symbols-outlined text-sm">folder</span>
                     {course.department || 'Course'}
                   </div>
-                  <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2 mt-1">
+                  <h3 className="font-bold text-slate-900 group-hover:text-amber-600 transition-colors line-clamp-2 mt-1">
                     {course.title}
                   </h3>
                   <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
@@ -227,7 +227,7 @@ function CreateCourseModal({ onClose, onCreated }: { onClose: () => void; onCrea
           <button
             type="submit"
             disabled={loading}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center gap-2"
+            className="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center gap-2"
           >
             {loading && <Spinner />}
             Create course

@@ -27,7 +27,7 @@ export function ResultDetailPage() {
     <div className="space-y-6 pb-16 max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <Link to={backTo} className="text-xs font-semibold text-slate-500 hover:text-blue-600 flex items-center gap-1 mb-1">
+          <Link to={backTo} className="text-xs font-semibold text-slate-500 hover:text-amber-600 flex items-center gap-1 mb-1">
             <span className="material-symbols-outlined text-sm">arrow_back</span> Back
           </Link>
           <h1 className="text-xl lg:text-2xl font-extrabold text-slate-900 tracking-tight">
@@ -40,7 +40,7 @@ export function ResultDetailPage() {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-        <div className="flex flex-col items-center justify-center p-4 bg-gradient-to-b from-slate-50 to-blue-50/30 rounded-2xl border border-slate-200/80 text-center">
+        <div className="flex flex-col items-center justify-center p-4 bg-gradient-to-b from-slate-50 to-amber-50/30 rounded-2xl border border-slate-200/80 text-center">
           <div className="relative w-32 h-32 flex items-center justify-center">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
               <path
@@ -51,7 +51,7 @@ export function ResultDetailPage() {
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
               <path
-                className={passed ? 'text-blue-600' : 'text-amber-500'}
+                className={passed ? 'text-amber-600' : 'text-amber-500'}
                 strokeDasharray={`${attempt.percentage ?? 0}, 100`}
                 strokeWidth="3.5"
                 strokeLinecap="round"
@@ -79,12 +79,12 @@ export function ResultDetailPage() {
             <Stat label="Pass mark" value={`${quiz.passingScore}%`} sub={passed ? 'cleared' : 'below cutoff'} />
           </div>
           {attempt.aiSummary && (
-            <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200/80 text-xs">
-              <div className="flex items-center gap-1.5 font-bold text-blue-900">
-                <span className="material-symbols-outlined text-base text-blue-600">auto_awesome</span>
+            <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs">
+              <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                <span className="material-symbols-outlined text-base text-amber-600">auto_awesome</span>
                 GYMC Quiz diagnostic summary
               </div>
-              <p className="text-blue-950/80 leading-relaxed mt-1">{attempt.aiSummary}</p>
+              <p className="text-amber-950/80 leading-relaxed mt-1">{attempt.aiSummary}</p>
             </div>
           )}
         </div>
@@ -92,7 +92,7 @@ export function ResultDetailPage() {
 
       <div className="space-y-4">
         <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-          <span className="material-symbols-outlined text-blue-600">playlist_add_check</span>
+          <span className="material-symbols-outlined text-amber-600">playlist_add_check</span>
           Question breakdown
         </h2>
 
@@ -126,7 +126,7 @@ export function ResultDetailPage() {
                     {ok ? 'Correct' : partial ? 'Partial' : 'Incorrect'}
                   </span>
                   {e.gradedBy === 'ai' && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
                       AI graded
                     </span>
                   )}
@@ -166,7 +166,7 @@ export function ResultDetailPage() {
               {(e.aiEvaluation || e.explanation) && (
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-700 space-y-1.5">
                   <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-indigo-600 text-sm">menu_book</span>
+                    <span className="material-symbols-outlined text-amber-600 text-sm">menu_book</span>
                     {e.aiEvaluation ? 'AI evaluation' : 'Explanation'}
                   </div>
                   <p className="leading-relaxed text-slate-600">{e.aiEvaluation || e.explanation}</p>
@@ -197,7 +197,7 @@ export function ResultDetailPage() {
                         <button
                           key={i}
                           onClick={() => setRef(r)}
-                          className="px-3 py-1.5 rounded-xl text-xs font-bold border bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 flex items-center gap-1.5"
+                          className="px-3 py-1.5 rounded-xl text-xs font-bold border bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 flex items-center gap-1.5"
                         >
                           <span className="material-symbols-outlined text-sm">auto_stories</span>
                           {`Course material${r.page ? ` · p.${r.page}` : ''}`}

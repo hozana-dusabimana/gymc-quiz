@@ -52,39 +52,39 @@ export function MemberDashboardPage() {
       </div>
 
       {quizzes.loading ? null : primary ? (
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 text-white shadow-xl p-6 lg:p-8">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-600 via-amber-700 to-slate-950 text-white shadow-xl p-6 lg:p-8">
           <div className="absolute right-0 inset-y-0 w-1/3 opacity-10 flex items-center justify-center pointer-events-none">
             <span className="material-symbols-outlined text-[200px]">timer</span>
           </div>
           <div className="relative z-10 max-w-3xl space-y-4">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-1 rounded-md bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-bold uppercase tracking-wider">
+              <span className="px-2.5 py-1 rounded-md bg-yellow-300/20 text-yellow-200 border border-yellow-300/40 text-xs font-bold uppercase tracking-wider">
                 Available now
               </span>
-              <span className="text-xs font-medium bg-white/10 px-2.5 py-1 rounded-md text-blue-100">
+              <span className="text-xs font-medium bg-white/10 px-2.5 py-1 rounded-md text-amber-100">
                 {primary.courseCode} • {primary.courseTitle}
               </span>
             </div>
             <div>
               <h2 className="text-xl lg:text-2xl font-bold tracking-tight">{primary.title}</h2>
-              <p className="text-xs lg:text-sm text-blue-100/90 mt-1.5 leading-relaxed">
+              <p className="text-xs lg:text-sm text-amber-100/90 mt-1.5 leading-relaxed">
                 {primary.description || 'Assessment ready to start.'}
               </p>
             </div>
-            <div className="pt-1 flex flex-wrap items-center gap-4 lg:gap-6 text-xs text-blue-100">
+            <div className="pt-1 flex flex-wrap items-center gap-4 lg:gap-6 text-xs text-amber-100">
               <span className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-base text-blue-300">schedule</span>
+                <span className="material-symbols-outlined text-base text-yellow-300">schedule</span>
                 <strong>{primary.durationMinutes}</strong> mins
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-base text-blue-300">format_list_numbered</span>
+                <span className="material-symbols-outlined text-base text-yellow-300">format_list_numbered</span>
                 <strong>{primary.questionCount}</strong> questions
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-base text-blue-300">grade</span>
+                <span className="material-symbols-outlined text-base text-yellow-300">grade</span>
                 <strong>{primary.totalMarks}</strong> marks
               </span>
-              <span className="flex items-center gap-1.5 text-amber-300 font-semibold">
+              <span className="flex items-center gap-1.5 text-yellow-300 font-semibold">
                 <span className="material-symbols-outlined text-base">event_available</span>
                 {deadlineLabel(primary.deadline)}
               </span>
@@ -92,7 +92,7 @@ export function MemberDashboardPage() {
             <div className="pt-2 flex items-center gap-3">
               <button
                 onClick={() => navigate(`/member/quizzes/${primary.id}`)}
-                className="px-6 py-2.5 bg-white text-blue-700 hover:bg-blue-50 font-bold text-sm rounded-xl shadow-lg transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                className="px-6 py-2.5 bg-white text-amber-700 hover:bg-amber-50 font-bold text-sm rounded-xl shadow-lg transition-all hover:-translate-y-0.5 flex items-center gap-2"
               >
                 Start assessment
                 <span className="material-symbols-outlined text-base">arrow_forward</span>
@@ -126,14 +126,14 @@ export function MemberDashboardPage() {
               value={s?.performanceIndex != null ? `${s.performanceIndex.toFixed(2)} / 4.0` : '—'}
               hint="Across graded quizzes"
               icon="school"
-              tone="blue"
+              tone="gold"
             />
             <StatCard
               label="Quizzes taken"
               value={s?.quizzesTaken ?? 0}
               hint={s?.completionRate != null ? `${s.completionRate}% completion rate` : undefined}
               icon="check_circle"
-              tone="indigo"
+              tone="amber"
             />
             <StatCard
               label="Average score"
@@ -157,10 +157,10 @@ export function MemberDashboardPage() {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <span className="material-symbols-outlined text-blue-600">book</span>
+              <span className="material-symbols-outlined text-amber-600">book</span>
               Enrolled courses{s?.term ? ` (${s.term})` : ''}
             </h2>
-            <Link to="/member/courses" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+            <Link to="/member/courses" className="text-xs font-semibold text-amber-600 hover:text-amber-700">
               View all →
             </Link>
           </div>
@@ -176,7 +176,7 @@ export function MemberDashboardPage() {
               <Link
                 key={course.id}
                 to={`/courses/${course.id}`}
-                className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all group flex flex-col justify-between"
+                className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-amber-400 hover:shadow-md transition-all group flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
@@ -190,7 +190,7 @@ export function MemberDashboardPage() {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+                    <h3 className="font-bold text-slate-900 group-hover:text-amber-600 transition-colors line-clamp-1">
                       {course.title}
                     </h3>
                     <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
@@ -210,10 +210,10 @@ export function MemberDashboardPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <span className="material-symbols-outlined text-indigo-600">verified</span>
+              <span className="material-symbols-outlined text-amber-600">verified</span>
               Recent results
             </h2>
-            <Link to="/member/results" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+            <Link to="/member/results" className="text-xs font-semibold text-amber-600 hover:text-amber-700">
               Grades →
             </Link>
           </div>
@@ -229,7 +229,7 @@ export function MemberDashboardPage() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700">
                       {sub.courseCode}
                     </span>
                     <h3 className="font-bold text-xs text-slate-900 mt-1 line-clamp-1">{sub.quizTitle}</h3>
@@ -251,7 +251,7 @@ export function MemberDashboardPage() {
                   <span className="text-[11px]">{formatDateTime(sub.completedAt)}</span>
                   <Link
                     to={`/member/results/${sub.id}`}
-                    className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 hover:underline"
+                    className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1 hover:underline"
                   >
                     Review feedback →
                   </Link>

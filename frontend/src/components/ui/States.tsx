@@ -12,7 +12,7 @@ export function Spinner({ className = '' }: { className?: string }) {
 export function LoadingState({ label = 'Loading…', className = '' }: { label?: string; className?: string }) {
   return (
     <div className={`flex flex-col items-center justify-center gap-3 py-16 text-slate-500 ${className}`}>
-      <Spinner className="w-6 h-6 text-blue-600" />
+      <Spinner className="w-6 h-6 text-amber-600" />
       <p className="text-xs font-medium">{label}</p>
     </div>
   );

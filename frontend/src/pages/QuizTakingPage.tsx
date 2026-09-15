@@ -135,7 +135,7 @@ export function QuizTakingPage() {
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-mono">
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-mono">
                 {data.quiz.courseCode}
               </span>
               <h1 className="text-sm md:text-base font-bold text-slate-900 line-clamp-1">{data.quiz.title}</h1>
@@ -155,7 +155,7 @@ export function QuizTakingPage() {
             </div>
             <button
               onClick={() => setConfirmOpen(true)}
-              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5"
+              className="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5"
             >
               Submit <span className="material-symbols-outlined text-sm">check</span>
             </button>
@@ -197,7 +197,7 @@ export function QuizTakingPage() {
                   value={answers[q.id] || ''}
                   onChange={(e) => setAnswer(q.id, e.target.value)}
                   placeholder="Type your response…"
-                  className="w-full p-4 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm outline-none"
+                  className="w-full p-4 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-sm outline-none"
                 />
               </div>
             ) : (
@@ -209,17 +209,17 @@ export function QuizTakingPage() {
                       key={idx}
                       onClick={() => setAnswer(q.id, opt)}
                       className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center gap-3.5 ${
-                        selected ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
+                        selected ? 'border-amber-600 bg-amber-50/50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
                       }`}
                     >
                       <span
                         className={`w-6 h-6 rounded-full font-bold text-xs flex items-center justify-center shrink-0 border ${
-                          selected ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-100 text-slate-600 border-slate-300'
+                          selected ? 'bg-amber-600 text-white border-amber-600' : 'bg-slate-100 text-slate-600 border-slate-300'
                         }`}
                       >
                         {String.fromCharCode(65 + idx)}
                       </span>
-                      <span className={`text-sm font-medium ${selected ? 'text-blue-900 font-semibold' : 'text-slate-800'}`}>
+                      <span className={`text-sm font-medium ${selected ? 'text-amber-900 font-semibold' : 'text-slate-800'}`}>
                         {opt}
                       </span>
                     </button>
@@ -242,7 +242,7 @@ export function QuizTakingPage() {
                     flushSave();
                     setCurrent((c) => c + 1);
                   }}
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
                 >
                   Next <span className="material-symbols-outlined text-sm">arrow_forward</span>
                 </button>
@@ -270,7 +270,7 @@ export function QuizTakingPage() {
               </div>
               <div className="w-full h-1.5 rounded-full bg-slate-100 mt-2 overflow-hidden">
                 <div
-                  className="h-full bg-blue-600 rounded-full transition-all"
+                  className="h-full bg-amber-600 rounded-full transition-all"
                   style={{ width: `${(answeredCount / questions.length) * 100}%` }}
                 />
               </div>
@@ -284,8 +284,8 @@ export function QuizTakingPage() {
                     key={qq.id}
                     onClick={() => setCurrent(idx)}
                     className={`relative h-10 rounded-xl text-xs font-bold border flex items-center justify-center ${
-                      isAns ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-100 text-slate-700 border-slate-200'
-                    } ${isCur ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
+                      isAns ? 'bg-amber-600 text-white border-amber-600' : 'bg-slate-100 text-slate-700 border-slate-200'
+                    } ${isCur ? 'ring-2 ring-amber-500 ring-offset-2' : ''}`}
                   >
                     {idx + 1}
                     {flags[qq.id] && (
@@ -297,7 +297,7 @@ export function QuizTakingPage() {
             </div>
             <button
               onClick={() => setConfirmOpen(true)}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5"
             >
               Submit assessment <span className="material-symbols-outlined text-base">task_alt</span>
             </button>
@@ -308,7 +308,7 @@ export function QuizTakingPage() {
       {confirmOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
               <span className="material-symbols-outlined text-2xl">check_circle</span>
             </div>
             <div>
@@ -336,7 +336,7 @@ export function QuizTakingPage() {
               <button
                 onClick={submit}
                 disabled={submitting}
-                className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-bold rounded-xl flex items-center gap-1.5"
+                className="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white text-xs font-bold rounded-xl flex items-center gap-1.5"
               >
                 {submitting ? <Spinner /> : <span className="material-symbols-outlined text-sm">send</span>}
                 Submit now

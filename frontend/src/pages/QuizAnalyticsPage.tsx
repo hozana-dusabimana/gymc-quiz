@@ -31,7 +31,7 @@ export function QuizAnalyticsPage() {
   const low = scores.length ? Math.min(...scores) : null;
   const bands = [
     { label: '90–100% (A)', lo: 90, hi: 101, tone: 'bg-emerald-500' },
-    { label: '75–89% (B)', lo: 75, hi: 90, tone: 'bg-blue-500' },
+    { label: '75–89% (B)', lo: 75, hi: 90, tone: 'bg-amber-500' },
     { label: '60–74% (C)', lo: 60, hi: 75, tone: 'bg-amber-500' },
     { label: '< 60% (needs review)', lo: 0, hi: 60, tone: 'bg-rose-500' },
   ].map((b) => {
@@ -81,11 +81,11 @@ export function QuizAnalyticsPage() {
     <div className="space-y-6 pb-16 max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <Link to="/leader/analytics" className="text-xs font-semibold text-slate-500 hover:text-indigo-600 flex items-center gap-1 mb-1">
+          <Link to="/leader/analytics" className="text-xs font-semibold text-slate-500 hover:text-amber-600 flex items-center gap-1 mb-1">
             <span className="material-symbols-outlined text-sm">arrow_back</span> Analytics
           </Link>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">
+            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">
               {q.courseCode}
             </span>
             <StatusPill status={q.status} />
@@ -108,7 +108,7 @@ export function QuizAnalyticsPage() {
       {scores.length > 0 && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
           <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <span className="material-symbols-outlined text-indigo-600">bar_chart</span>
+            <span className="material-symbols-outlined text-amber-600">bar_chart</span>
             Score distribution breakdown
           </h2>
           <div className="space-y-3 pt-1">
@@ -183,7 +183,7 @@ export function QuizAnalyticsPage() {
                       {a.status === 'completed' && (
                         <button
                           onClick={() => navigate(`/leader/results/${a.id}`)}
-                          className="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg"
+                          className="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold rounded-lg"
                         >
                           Review
                         </button>
@@ -199,7 +199,7 @@ export function QuizAnalyticsPage() {
 
       {/* bottom action bar — same controls as the header */}
       <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200">
-        <Link to="/leader/analytics" className="text-xs font-semibold text-slate-500 hover:text-indigo-600 flex items-center gap-1">
+        <Link to="/leader/analytics" className="text-xs font-semibold text-slate-500 hover:text-amber-600 flex items-center gap-1">
           <span className="material-symbols-outlined text-sm">arrow_back</span> Back to analytics
         </Link>
         <div className="flex items-center gap-2">{statusActions}</div>

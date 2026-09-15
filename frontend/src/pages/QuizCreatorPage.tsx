@@ -109,7 +109,7 @@ export function QuizCreatorPage() {
         <button
           onClick={() => setStep((s) => s + 1)}
           disabled={step === 1 && !canNext1}
-          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+          className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
         >
           Next <span className="material-symbols-outlined text-sm">arrow_forward</span>
         </button>
@@ -148,12 +148,12 @@ export function QuizCreatorPage() {
             key={n as number}
             onClick={() => setStep(n as number)}
             className={`flex-1 flex items-center gap-3 p-2 rounded-xl text-left ${
-              step === n ? 'bg-indigo-50/70 border border-indigo-200 text-indigo-900' : 'text-slate-400'
+              step === n ? 'bg-amber-50/70 border border-amber-200 text-amber-900' : 'text-slate-400'
             }`}
           >
             <span
               className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${
-                step === n ? 'bg-indigo-600 text-white' : step > (n as number) ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100'
+                step === n ? 'bg-amber-600 text-white' : step > (n as number) ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100'
               }`}
             >
               {step > (n as number) ? '✓' : (n as number)}
@@ -226,12 +226,12 @@ export function QuizCreatorPage() {
                   key={q.id}
                   onClick={() => setSelected((s) => (on ? s.filter((x) => x !== q.id) : [...s, q.id]))}
                   className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-start gap-3.5 ${
-                    on ? 'border-indigo-600 bg-indigo-50/40' : 'border-slate-200 hover:border-slate-300'
+                    on ? 'border-amber-600 bg-amber-50/40' : 'border-slate-200 hover:border-slate-300'
                   }`}
                 >
                   <span
                     className={`w-5 h-5 rounded-md flex items-center justify-center mt-0.5 border shrink-0 ${
-                      on ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300'
+                      on ? 'bg-amber-600 border-amber-600 text-white' : 'border-slate-300'
                     }`}
                   >
                     {on && <span className="material-symbols-outlined text-sm">check</span>}
@@ -243,7 +243,7 @@ export function QuizCreatorPage() {
                       </span>
                       <span className="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">{q.difficulty}</span>
                       {!q.correctAnswer && (
-                        <span className="font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">AI-graded</span>
+                        <span className="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">AI-graded</span>
                       )}
                       <span className="ml-auto font-bold text-slate-900">{q.marks} marks</span>
                     </div>

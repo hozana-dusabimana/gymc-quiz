@@ -66,10 +66,12 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen: boolean; onClose:
     { to: '/leader/questions', label: 'Question Bank', icon: 'help_outline' },
     { to: '/leader/quizzes/new', label: 'Quiz Studio', icon: 'edit_note' },
     { to: '/leader/analytics', label: 'Analytics & Grades', icon: 'query_stats' },
+    { to: '/members', label: 'Members', icon: 'groups' },
   ];
 
   const adminNav: NavItem[] = [
     { to: '/admin', label: 'Leaders & Admins', icon: 'admin_panel_settings', end: true },
+    { to: '/members', label: 'Members', icon: 'groups' },
   ];
 
   const nav = role === 'member' ? memberNav : role === 'leader' ? leaderNav : adminNav;

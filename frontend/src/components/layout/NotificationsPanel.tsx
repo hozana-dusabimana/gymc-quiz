@@ -11,7 +11,7 @@ const ICON: Record<string, string> = {
   system: 'info',
 };
 const TONE: Record<string, string> = {
-  quiz: 'bg-blue-100 text-blue-700',
+  quiz: 'bg-amber-100 text-amber-700',
   grade: 'bg-emerald-100 text-emerald-700',
   material: 'bg-purple-100 text-purple-700',
   system: 'bg-slate-100 text-slate-600',
@@ -34,11 +34,11 @@ export function NotificationsPanel({ onClose }: { onClose: () => void }) {
       >
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-blue-600">notifications</span>
+            <span className="material-symbols-outlined text-amber-600">notifications</span>
             <h3 className="font-bold text-sm text-slate-900">Notifications</h3>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={markAll} className="text-[11px] font-semibold text-blue-600 hover:text-blue-700">
+            <button onClick={markAll} className="text-[11px] font-semibold text-amber-600 hover:text-amber-700">
               Mark all read
             </button>
             <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-700">
@@ -61,7 +61,7 @@ export function NotificationsPanel({ onClose }: { onClose: () => void }) {
                 onClose();
               }}
               className={`w-full text-left p-4 hover:bg-slate-50 transition-colors flex gap-3 ${
-                !n.read ? 'bg-blue-50/40' : 'bg-white'
+                !n.read ? 'bg-amber-50/40' : 'bg-white'
               }`}
             >
               <div className={`w-8 h-8 rounded-xl shrink-0 flex items-center justify-center ${TONE[n.type]}`}>

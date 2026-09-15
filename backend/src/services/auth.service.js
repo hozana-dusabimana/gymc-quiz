@@ -60,6 +60,7 @@ export function publicUser(u) {
     prefix: u.prefix || null,
     avatarUrl: u.avatar_url || null,
     memberNumber: u.member_number || null,
+    isActive: u.is_active,
     createdAt: u.created_at,
     lastLoginAt: u.last_login_at || null,
   };
@@ -114,12 +115,50 @@ export async function createUserByAdmin({ name, email, phone, password, role }) 
   return publicUser(user);
 }
 
-/** List every leader/admin account, newest first. */
+/** List every leader/admin account, newest first, with a count of owned courses. */
 export async function listStaffUsers() {
   const { rows } = await query(
-    `SELECT * FROM users WHERE role IN ('leader', 'admin') ORDER BY created_at DESC`,
+    `SELECT u.*, (SELECT count(*) FROM courses c WHERE c.leader_id = u.id) AS courses_count
+       FROM users u
+      WHERE u.role IN ('leader', 'admin')
+      ORDER BY u.created_at DESC`,
   );
-  return rows.map(publicUser);
+  return rows.map((r) => ({ ...publicUser(r), coursesCount: Number(r.courses_count) }));
+}
+
+/**
+ * Update an account's editable fields. `allow` lists which patch keys the
+ * caller may set (route handlers decide that per role — e.g. members can't
+ * be granted a role change through the member-management endpoint).
+ */
+export async function updateUser(id, patch, allow) {
+  const COLUMN = { name: 'name', phone: 'phone', email: 'email', role: 'role', isActive: 'is_active', memberNumber: 'member_number' };
+  const fields = [];
+  const values = [];
+  for (const key of allow) {
+    if (patch[key] === undefined) continue;
+    const value = key === 'email' ? normaliseEmail(patch[key]) : patch[key];
+    fields.push(`${COLUMN[key]} = $${fields.length + 1}`);
+    values.push(value);
+  }
+  if (!fields.length) throw errors.validation('Nothing to update');
+
+  if (patch.email !== undefined) {
+    const existing = await findUserByEmail(patch.email);
+    if (existing && existing.id !== id) throw errors.conflict('Another account already uses that email');
+  }
+  if (patch.phone !== undefined) {
+    const existing = await findUserByPhone(patch.phone);
+    if (existing && existing.id !== id) throw errors.conflict('Another account already uses that phone number');
+  }
+
+  values.push(id);
+  const { rows } = await query(
+    `UPDATE users SET ${fields.join(', ')} WHERE id = $${values.length} RETURNING *`,
+    values,
+  );
+  if (!rows[0]) throw errors.notFound('Account not found');
+  return publicUser(rows[0]);
 }
 
 /** Sign in with an email or phone number plus password. */
