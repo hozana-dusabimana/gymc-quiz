@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { request, signup, uniqueEmail, uniquePhone, auth, adminToken, DEFAULT_PASSWORD } from './helpers.js';
+import { request, signup, uniquePhone, auth, adminToken, DEFAULT_PASSWORD } from './helpers.js';
 
 describe('admin manages leader/admin accounts', () => {
   it('admin edits a leader\'s name and phone', async () => {
