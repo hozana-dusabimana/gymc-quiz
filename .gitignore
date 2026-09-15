@@ -1,0 +1,54 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# builds
+dist/
+build/
+frontend/dist/
+coverage/
+**/coverage/
+
+# env & secrets
+.env
+.env.*
+!.env.example
+keys.md
+*.pem
+*.key
+
+# logs
+*.log
+npm-debug.log*
+logs/
+
+# caches
+.vite/
+**/.vite/
+.cache/
+.DS_Store
+*.local
+
+# transformers.js model cache
+backend/.models/
+.models/
+
+# local filesystem storage driver (dev only)
+backend/.storage/
+.storage/
+
+# uploads (should never be persisted locally)
+uploads/
+tmp/
+
+# test output
+test-results/
+**/test-results/
+playwright-report/
+**/playwright-report/
+e2e/screenshots/
+**/e2e/screenshots/
+blob-report/
+
+# misc lockfiles we don't use
+bun.lock

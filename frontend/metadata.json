@@ -1,0 +1,6 @@
+{
+  "name": "Gisozi Youth Mass Choir Quiz",
+  "description": "Gisozi Youth Mass Choir Quiz — adaptive quizzes, learning analytics, AI question generation, and course material management for the choir.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

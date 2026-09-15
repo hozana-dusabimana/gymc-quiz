@@ -1,0 +1,125 @@
+name: Deploy
+
+# Runs on our own runner on the deployment host (GitHub-hosted minutes are
+# metered on this account). Backend lint + tests gate the deploy; the deploy
+# itself goes over SSH as the site user, never touching the tree directly.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  SSH_HOST: 176.126.87.142
+  SSH_USER: gymcapi
+  SSH_PORT: '22'
+  # App lives OUTSIDE the CloudPanel web root so nginx can never serve source
+  # files (.env, .git, etc). nginx for both sites is a plain reverse proxy.
+  APP_DIR: /home/gymcapi/app
+  API_PORT: '4041'
+  WEB_PORT: '8194'
+  SSH_KNOWN_HOSTS: |
+    176.126.87.142 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGi5zAwHJ87yWrH5DH/nHTtIVC6ssirC58iQLPv4G79M
+
+jobs:
+  deploy:
+    name: Verify & deploy
+    runs-on: [self-hosted, linux, gymc]
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---- gate: lint + tests (local Postgres on the runner host) ----
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Backend install
+        working-directory: backend
+        run: npm ci
+      - name: Backend lint
+        working-directory: backend
+        run: npm run lint
+      - name: Backend tests
+        working-directory: backend
+        env:
+          NODE_ENV: test
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          JWT_SECRET: ci-verify
+          OPENROUTER_API_KEY: ''
+          STORAGE_DRIVER: local
+          EMBEDDINGS_FALLBACK: 'true'
+        run: npm run migrate && npm test
+      - name: Frontend typecheck
+        working-directory: frontend
+        run: npm ci && npm run lint
+
+      # ---- deploy ----
+      - name: Authorise SSH
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          test -n "$SSH_KEY" || { echo "::error::secret SSH_KEY is not set"; exit 1; }
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts
+
+      - name: Sync code
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o BatchMode=yes" \
+            --exclude '.git' --exclude 'node_modules' --exclude 'dist' \
+            --exclude '.env' --exclude 'backend/.storage' --exclude 'logs' \
+            --exclude 'e2e/screenshots' --exclude 'test-results' --exclude 'playwright-report' \
+            ./ "$SSH_USER@$SSH_HOST:$APP_DIR/"
+
+      # sshd occasionally refuses a connection under back-to-back auths
+      # (MaxStartups / fail2ban), so each remote step retries with backoff.
+      # The remote script is written to a file first so stdin survives a retry.
+      - name: Install, migrate, build, restart
+        run: |
+          cat > /tmp/remote_deploy.sh <<'REMOTE'
+          set -euo pipefail
+          cd "$APP_DIR"
+          test -f .env || { echo "ERROR: $APP_DIR/.env is missing"; exit 1; }
+          ( cd backend && npm ci --omit=dev && npm run migrate )
+          ( cd frontend && npm ci && npm run build )
+          ( cd backend  && pm2 reload gymc-api  --update-env || pm2 start ecosystem.config.cjs )
+          ( cd frontend && WEB_PORT="$WEB_PORT" pm2 reload gymc-web --update-env || WEB_PORT="$WEB_PORT" pm2 start ecosystem.config.cjs )
+          pm2 save
+          REMOTE
+          for attempt in 1 2 3 4 5; do
+            ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o BatchMode=yes -o ConnectTimeout=15 \
+              "$SSH_USER@$SSH_HOST" APP_DIR="$APP_DIR" WEB_PORT="$WEB_PORT" 'bash -s' \
+              < /tmp/remote_deploy.sh && exit 0
+            rc=$?
+            # 255 = ssh transport/auth failure; anything else is a real remote error
+            if [ "$rc" -ne 255 ]; then exit "$rc"; fi
+            echo "::warning::ssh attempt $attempt failed (transport), retrying in $((attempt * 5))s"
+            sleep $((attempt * 5))
+          done
+          exit 1
+
+      - name: Health gate
+        run: |
+          cat > /tmp/remote_health.sh <<'REMOTE'
+          set -euo pipefail
+          for i in $(seq 1 30); do
+            body=$(curl -sf "http://127.0.0.1:$API_PORT/api/health" || true)
+            if [ -n "$body" ]; then
+              echo "$body" | grep -q '"status":"ok"' && { echo "healthy: $body"; exit 0; }
+              echo "unhealthy: $body"; exit 1
+            fi
+            sleep 2
+          done
+          echo "service never became healthy"; exit 1
+          REMOTE
+          for attempt in 1 2 3 4 5; do
+            ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o BatchMode=yes -o ConnectTimeout=15 \
+              "$SSH_USER@$SSH_HOST" API_PORT="$API_PORT" 'bash -s' < /tmp/remote_health.sh && exit 0
+            rc=$?
+            if [ "$rc" -ne 255 ]; then exit "$rc"; fi
+            echo "::warning::ssh attempt $attempt failed (transport), retrying in $((attempt * 5))s"
+            sleep $((attempt * 5))
+          done
+          exit 1
