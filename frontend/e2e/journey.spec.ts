@@ -4,7 +4,7 @@ import fs from 'node:fs';
 
 /**
  * Full end-to-end journey through the real UI:
- * lecturer builds a course + material + questions + quiz, student takes it,
+ * leader builds a course + material + questions + quiz, member takes it,
  * both sides review the AI-graded result.
  *
  * Requires the backend (:4000) and frontend dev server (:3000) already running.
@@ -17,18 +17,18 @@ const shot = (page: Page, name: string) =>
   page.screenshot({ path: path.join(SHOTS, `${name}.png`), fullPage: true });
 
 const stamp = Date.now();
-const lecturer = { name: 'Dr Ada Lovelace', email: `lecturer.${stamp}@e2e.local` };
-const student = { name: 'Charles Babbage', email: `student.${stamp}@e2e.local` };
+const leader = { name: 'Dr Ada Lovelace', email: `leader.${stamp}@e2e.local` };
+const member = { name: 'Charles Babbage', email: `member.${stamp}@e2e.local` };
 const COURSE_CODE = `E2E${stamp % 10000}`;
 const COURSE_TITLE = 'E2E Database Systems';
 
 const nav = (page: Page) => page.locator('aside').first();
 
-async function register(page: Page, who: { name: string; email: string }, role: 'student' | 'lecturer') {
+async function register(page: Page, who: { name: string; email: string }, role: 'member' | 'leader') {
   await page.goto('/login');
   await page.getByRole('button', { name: 'Register', exact: true }).click();
-  if (role === 'lecturer') {
-    await page.getByRole('button', { name: /Faculty \/ Lecturer/ }).click();
+  if (role === 'leader') {
+    await page.getByRole('button', { name: /Faculty \/ Leader/ }).click();
   }
   await page.getByLabel('Full name').fill(who.name);
   await page.getByLabel('Email address').fill(who.email);
@@ -49,7 +49,7 @@ async function finishOtp(page: Page) {
   const code = (await banner.locator('strong').innerText()).trim();
   await page.getByPlaceholder('000000').fill(code);
   await page.getByRole('button', { name: /Verify & continue/ }).click();
-  await page.waitForURL(/\/(student|lecturer)($|\/)/);
+  await page.waitForURL(/\/(member|leader)($|\/)/);
   await dismissGuide(page);
 }
 
@@ -67,13 +67,13 @@ async function logout(page: Page) {
   await page.waitForURL(/\/login/);
 }
 
-test('lecturer builds a quiz, student takes it, both review the result', async ({ page }) => {
+test('leader builds a quiz, member takes it, both review the result', async ({ page }) => {
   page.setDefaultTimeout(20_000);
 
-  // ---------- LECTURER: register + create course ----------
-  await register(page, lecturer, 'lecturer');
+  // ---------- LEADER: register + create course ----------
+  await register(page, leader, 'leader');
   await expect(page.getByRole('heading', { name: 'Faculty workspace' })).toBeVisible();
-  await shot(page, '01-lecturer-dashboard');
+  await shot(page, '01-leader-dashboard');
 
   await nav(page).getByRole('link', { name: 'Courses' }).click();
   await page.getByRole('button', { name: 'New course' }).click();
@@ -85,7 +85,7 @@ test('lecturer builds a quiz, student takes it, both review the result', async (
   await expect(page.getByText('Course created').first()).toBeVisible();
   await shot(page, '02-course-created');
 
-  // ---------- LECTURER: upload a material ----------
+  // ---------- LEADER: upload a material ----------
   await nav(page).getByRole('link', { name: 'Material Library' }).click();
   await page.locator('select').first().selectOption({ label: `${COURSE_CODE} — ${COURSE_TITLE}` });
   await page.setInputFiles('input[type=file]', path.join(HERE, 'fixtures', 'indexing.pdf'));
@@ -93,7 +93,7 @@ test('lecturer builds a quiz, student takes it, both review the result', async (
   await expect(page.locator('text=/^ready$/i').first()).toBeVisible({ timeout: 90_000 });
   await shot(page, '03-material-ready');
 
-  // ---------- LECTURER: create questions ----------
+  // ---------- LEADER: create questions ----------
   await nav(page).getByRole('link', { name: 'Question Bank' }).click();
   await page.getByRole('button', { name: 'New question' }).click();
   await page.getByLabel('Question text').fill('Which SQL keyword removes duplicate rows from a result set?');
@@ -117,7 +117,7 @@ test('lecturer builds a quiz, student takes it, both review the result', async (
   await expect(page.getByText('Question saved').first()).toBeVisible();
   await shot(page, '04-question-bank');
 
-  // ---------- LECTURER: build + publish quiz ----------
+  // ---------- LEADER: build + publish quiz ----------
   await nav(page).getByRole('link', { name: 'Quiz Studio' }).click();
   await page.getByLabel('Title').fill('E2E Quiz 1');
   await page.getByLabel('Duration (minutes)').fill('15');
@@ -133,31 +133,31 @@ test('lecturer builds a quiz, student takes it, both review the result', async (
 
   await logout(page);
 
-  // ---------- STUDENT: register ----------
-  await register(page, student, 'student');
+  // ---------- MEMBER: register ----------
+  await register(page, member, 'member');
   await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible();
-  await shot(page, '06-student-dashboard-empty');
+  await shot(page, '06-member-dashboard-empty');
   await logout(page);
 
-  // ---------- LECTURER: enrol student ----------
-  await login(page, lecturer.email);
+  // ---------- LEADER: enrol member ----------
+  await login(page, leader.email);
   await nav(page).getByRole('link', { name: 'Courses' }).click();
   await page.getByText(COURSE_TITLE).click();
-  await page.getByRole('button', { name: /Students \(/ }).click();
-  await page.getByRole('button', { name: 'Add student' }).click();
-  await page.getByLabel('Student email').fill(student.email);
+  await page.getByRole('button', { name: /Members \(/ }).click();
+  await page.getByRole('button', { name: 'Add member' }).click();
+  await page.getByLabel('Member email').fill(member.email);
   await page.getByRole('button', { name: 'Enrol' }).click();
-  await expect(page.getByText('Student enrolled').first()).toBeVisible();
-  await shot(page, '07-student-enrolled');
+  await expect(page.getByText('Member enrolled').first()).toBeVisible();
+  await shot(page, '07-member-enrolled');
   await logout(page);
 
-  // ---------- STUDENT: take the quiz ----------
-  await login(page, student.email);
+  // ---------- MEMBER: take the quiz ----------
+  await login(page, member.email);
   await nav(page).getByRole('link', { name: 'Quizzes' }).click();
   await expect(page.getByRole('heading', { name: 'E2E Quiz 1' })).toBeVisible();
   await page.getByRole('link', { name: /Start/ }).first().click();
   await page.getByRole('button', { name: /Start \/ resume assessment/ }).click();
-  await page.waitForURL(/\/student\/attempt\//);
+  await page.waitForURL(/\/member\/attempt\//);
   await shot(page, '08-quiz-taking');
 
   await page.getByRole('button', { name: 'DISTINCT' }).click();
@@ -170,21 +170,21 @@ test('lecturer builds a quiz, student takes it, both review the result', async (
   await page.getByRole('button', { name: /Finish/ }).click();
   await page.getByRole('button', { name: 'Submit now' }).click();
 
-  await page.waitForURL(/\/student\/results\//, { timeout: 90_000 });
+  await page.waitForURL(/\/member\/results\//, { timeout: 90_000 });
   await expect(page.getByRole('heading', { name: 'Assessment review' })).toBeVisible();
   await expect(page.getByText('AI graded')).toBeVisible({ timeout: 30_000 });
-  await shot(page, '09-student-result');
+  await shot(page, '09-member-result');
   const scoreText = await page.locator('.text-3xl.font-black').first().innerText();
   expect(parseInt(scoreText, 10)).toBeGreaterThan(0);
 
   await logout(page);
 
-  // ---------- LECTURER: review the student's attempt ----------
-  await login(page, lecturer.email);
+  // ---------- LEADER: review the member's attempt ----------
+  await login(page, leader.email);
   await page.getByRole('button', { name: 'Analytics' }).first().click();
-  await expect(page.getByText(student.name)).toBeVisible();
-  await shot(page, '10-lecturer-analytics');
+  await expect(page.getByText(member.name)).toBeVisible();
+  await shot(page, '10-leader-analytics');
   await page.getByRole('button', { name: 'Review', exact: true }).first().click();
   await expect(page.getByText('Question breakdown')).toBeVisible();
-  await shot(page, '11-lecturer-review');
+  await shot(page, '11-leader-review');
 });

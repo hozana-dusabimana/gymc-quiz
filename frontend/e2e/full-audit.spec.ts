@@ -5,16 +5,16 @@ import fs from 'node:fs';
 /**
  * FULL FEATURE AUDIT — drives the real UI end to end as a human would.
  *
- *   Lecturer:  register → dashboard/guide → 2 courses → upload PDF + Markdown
+ *   Leader:  register → dashboard/guide → 2 courses → upload PDF + Markdown
  *              materials → AI question generation → manual MCQ / true-false /
  *              short-answer questions → edit → quiz wizard (settings, publish)
- *              → draft quiz → enrol student → profile → notifications → analytics
- *   Student:   register → dashboard → courses → quiz instructions → take quiz
+ *              → draft quiz → enrol member → profile → notifications → analytics
+ *   Member:   register → dashboard → courses → quiz instructions → take quiz
  *              (MCQ + true/false + short answer, flag, navigator, autosave) →
  *              submit → AI-graded result → 2nd attempt with a wrong answer →
  *              results history → material reference modal
- *   Cross-checks: lecturer sees the submission + score, "Review" breakdown
- *   Guardrails: wrong OTP rejected, student blocked from lecturer routes
+ *   Cross-checks: leader sees the submission + score, "Review" breakdown
+ *   Guardrails: wrong OTP rejected, member blocked from leader routes
  *
  * Requires backend (:4000) and frontend (:3000) running, DISABLE_RATE_LIMIT=true.
  */
@@ -24,8 +24,8 @@ const SHOTS = path.join(HERE, 'screenshots', 'audit');
 fs.mkdirSync(SHOTS, { recursive: true });
 
 const stamp = Date.now();
-const lecturer = { name: 'Dr Grace Hopper', email: `lect.${stamp}@audit.local`, prefix: 'Prof.' };
-const student = { name: 'Alan Turing', email: `stud.${stamp}@audit.local` };
+const leader = { name: 'Dr Grace Hopper', email: `lect.${stamp}@audit.local`, prefix: 'Prof.' };
+const member = { name: 'Alan Turing', email: `stud.${stamp}@audit.local` };
 const COURSE = { code: `AUD${stamp % 10000}`, title: 'Audit Database Systems' };
 const COURSE2 = { code: `AUX${stamp % 10000}`, title: 'Audit Operating Systems' };
 const QUIZ_TITLE = 'Audit Quiz — Indexing';
@@ -79,7 +79,7 @@ async function finishOtp(page: Page) {
   const code = (await banner.locator('strong').innerText()).trim();
   await page.getByPlaceholder('000000').fill(code);
   await page.getByRole('button', { name: /Verify & continue/ }).click();
-  await page.waitForURL(/\/(student|lecturer)($|\/)/);
+  await page.waitForURL(/\/(member|leader)($|\/)/);
   await dismissGuide(page);
 }
 
@@ -90,10 +90,10 @@ async function dismissGuide(page: Page) {
     .catch(() => {});
 }
 
-async function register(page: Page, who: { name: string; email: string }, role: 'student' | 'lecturer') {
+async function register(page: Page, who: { name: string; email: string }, role: 'member' | 'leader') {
   await page.goto('/login');
   await page.getByRole('button', { name: 'Register', exact: true }).click();
-  if (role === 'lecturer') await page.getByRole('button', { name: /Faculty \/ Lecturer/ }).click();
+  if (role === 'leader') await page.getByRole('button', { name: /Faculty \/ Leader/ }).click();
   await page.getByLabel('Full name').fill(who.name);
   await page.getByLabel('Email address').fill(who.email);
   await page.getByRole('button', { name: /Create account/ }).click();
@@ -142,15 +142,15 @@ test.afterAll(async () => {
   console.log('\n=== AUDIT NOTES ===\n' + (notes.length ? notes.join('\n') : '(none)') + '\n');
 });
 
-test('01 · lecturer registers, sees dashboard + welcome guide', async () => {
-  await register(page, lecturer, 'lecturer');
+test('01 · leader registers, sees dashboard + welcome guide', async () => {
+  await register(page, leader, 'leader');
   await expect(page.getByRole('heading', { name: 'Faculty workspace' })).toBeVisible();
 
   // welcome guide: reopen from the top bar and step through it
   await page.locator('[data-tour="guide-button"]').first().click().catch(() => note('Guide button not found in top bar'));
   const dialog = page.getByRole('dialog');
   if (await dialog.isVisible().catch(() => false)) {
-    await shot(page, 'lecturer-guide');
+    await shot(page, 'leader-guide');
     for (let i = 0; i < 8; i++) {
       const next = page.getByRole('button', { name: /^(Next|Got it)$/ });
       if (!(await next.isVisible().catch(() => false))) break;
@@ -161,11 +161,11 @@ test('01 · lecturer registers, sees dashboard + welcome guide', async () => {
   } else {
     note('Welcome guide did not reopen from the top-bar Guide button');
   }
-  await page.goto('/lecturer');
-  await shot(page, 'lecturer-dashboard');
+  await page.goto('/leader');
+  await shot(page, 'leader-dashboard');
 });
 
-test('02 · lecturer creates two manual courses', async () => {
+test('02 · leader creates two manual courses', async () => {
   await nav(page).getByRole('link', { name: 'Courses' }).click();
   await createManualCourse(page, COURSE, 'Indexing, transactions and query optimization.');
   await createManualCourse(page, COURSE2, 'Processes, scheduling and memory.');
@@ -175,7 +175,7 @@ test('02 · lecturer creates two manual courses', async () => {
   await shot(page, 'courses-list');
 });
 
-test('03 · lecturer uploads a PDF and a Markdown material; both index to "ready"', async () => {
+test('03 · leader uploads a PDF and a Markdown material; both index to "ready"', async () => {
   await nav(page).getByRole('link', { name: 'Material Library' }).click();
   await page.locator('select').first().selectOption({ label: `${COURSE.code} — ${COURSE.title}` });
 
@@ -194,7 +194,7 @@ test('03 · lecturer uploads a PDF and a Markdown material; both index to "ready
   if (!summaries.some((s) => s.trim().length > 20)) note('No material summary text rendered after processing');
 });
 
-test('04 · lecturer generates questions from a material with AI', async () => {
+test('04 · leader generates questions from a material with AI', async () => {
   await nav(page).getByRole('link', { name: 'Material Library' }).click();
   await page.locator('select').first().selectOption({ label: `${COURSE.code} — ${COURSE.title}` });
 
@@ -213,7 +213,7 @@ test('04 · lecturer generates questions from a material with AI', async () => {
   }
 });
 
-test('05 · lecturer curates the question bank (MCQ, true/false, short answer, edit, filter)', async () => {
+test('05 · leader curates the question bank (MCQ, true/false, short answer, edit, filter)', async () => {
   await nav(page).getByRole('link', { name: 'Question Bank' }).click();
 
   // MCQ
@@ -260,7 +260,7 @@ test('05 · lecturer curates the question bank (MCQ, true/false, short answer, e
   await page.locator('select').filter({ hasText: 'All types' }).selectOption('all');
 });
 
-test('06 · lecturer builds and publishes a quiz through the 3-step wizard', async () => {
+test('06 · leader builds and publishes a quiz through the 3-step wizard', async () => {
   await nav(page).getByRole('link', { name: 'Quiz Studio' }).click();
   await expect(page.getByRole('heading', { name: /Quiz creation studio/ })).toBeVisible();
 
@@ -285,10 +285,10 @@ test('06 · lecturer builds and publishes a quiz through the 3-step wizard', asy
   await shot(page, 'quiz-settings');
   await page.getByRole('button', { name: /Publish/ }).click();
   await expect(page.getByText(/Quiz published/).first()).toBeVisible();
-  await page.waitForURL(/\/lecturer$/);
+  await page.waitForURL(/\/leader$/);
 });
 
-test('07 · lecturer saves a second quiz as a draft', async () => {
+test('07 · leader saves a second quiz as a draft', async () => {
   await nav(page).getByRole('link', { name: 'Quiz Studio' }).click();
   await page.locator('select').first().selectOption({ label: `${COURSE.code} — ${COURSE.title}` });
   await page.getByLabel('Title').fill('Audit Draft Quiz');
@@ -296,18 +296,18 @@ test('07 · lecturer saves a second quiz as a draft', async () => {
   await expect(page.getByText(/Saved as draft/).first()).toBeVisible();
 });
 
-test('08 · lecturer profile update + notifications panel', async () => {
+test('08 · leader profile update + notifications panel', async () => {
   await page.locator('header button', { hasText: 'expand_more' }).click();
   await page.getByRole('button', { name: 'Manage profile' }).click();
   await page.waitForURL(/\/profile/);
-  await page.getByLabel('Full name').fill(lecturer.name);
-  await page.getByLabel('Title / prefix').fill(lecturer.prefix);
+  await page.getByLabel('Full name').fill(leader.name);
+  await page.getByLabel('Title / prefix').fill(leader.prefix);
   await page.getByLabel('Phone').fill('+250700000000');
   await page.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByText('Profile updated').first()).toBeVisible();
-  // MIS SSO copy-paste kit is lecturer-only
-  await expect(page.getByText(/MIS|single sign-on|SSO/i).first()).toBeVisible().catch(() => note('MIS SSO card not visible on lecturer profile'));
-  await shot(page, 'lecturer-profile');
+  // MIS SSO copy-paste kit is leader-only
+  await expect(page.getByText(/MIS|single sign-on|SSO/i).first()).toBeVisible().catch(() => note('MIS SSO card not visible on leader profile'));
+  await shot(page, 'leader-profile');
 
   await page.getByRole('button', { name: 'Notifications' }).click();
   await expect(page.getByRole('heading', { name: 'Notifications' })).toBeVisible();
@@ -317,7 +317,7 @@ test('08 · lecturer profile update + notifications panel', async () => {
   await expect(page.locator('div.fixed.inset-0.z-50')).toHaveCount(0);
 });
 
-test('09 · lecturer reviews Analytics & Grades (pre-submission)', async () => {
+test('09 · leader reviews Analytics & Grades (pre-submission)', async () => {
   await nav(page).getByRole('link', { name: 'Analytics & Grades' }).click();
   await expect(page.getByRole('heading', { name: /Analytics & grades/i })).toBeVisible();
   await expect(page.getByText(QUIZ_TITLE)).toBeVisible();
@@ -325,50 +325,50 @@ test('09 · lecturer reviews Analytics & Grades (pre-submission)', async () => {
   await logout(page);
 });
 
-test('10 · student registers and lands on the dashboard', async () => {
-  await register(page, student, 'student');
+test('10 · member registers and lands on the dashboard', async () => {
+  await register(page, member, 'member');
   await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible();
-  await shot(page, 'student-dashboard-empty');
+  await shot(page, 'member-dashboard-empty');
   await logout(page);
 });
 
-test('11 · lecturer enrols the student into the course', async () => {
-  await login(page, lecturer.email);
+test('11 · leader enrols the member into the course', async () => {
+  await login(page, leader.email);
   await nav(page).getByRole('link', { name: 'Courses' }).click();
   await page.getByText(COURSE.title).click();
-  await page.getByRole('button', { name: /Students \(/ }).click();
-  await page.getByRole('button', { name: 'Add student' }).click();
-  await page.getByLabel('Student email').fill(student.email);
+  await page.getByRole('button', { name: /Members \(/ }).click();
+  await page.getByRole('button', { name: 'Add member' }).click();
+  await page.getByLabel('Member email').fill(member.email);
   await page.getByRole('button', { name: 'Enrol' }).click();
-  await expect(page.getByText('Student enrolled').first()).toBeVisible();
-  await expect(page.getByText(student.email)).toBeVisible();
-  await shot(page, 'student-enrolled');
+  await expect(page.getByText('Member enrolled').first()).toBeVisible();
+  await expect(page.getByText(member.email)).toBeVisible();
+  await shot(page, 'member-enrolled');
   await logout(page);
 });
 
-test('12 · student sees the course + published quiz', async () => {
-  await login(page, student.email);
+test('12 · member sees the course + published quiz', async () => {
+  await login(page, member.email);
   await nav(page).getByRole('link', { name: 'My Courses' }).click();
   await expect(page.getByText(COURSE.title)).toBeVisible();
   await page.getByText(COURSE.title).click();
   await expect(page.getByRole('heading', { name: COURSE.title })).toBeVisible();
-  // student must NOT see lecturer-only tabs
-  await expect(page.getByRole('button', { name: /Students \(/ })).toHaveCount(0);
+  // member must NOT see leader-only tabs
+  await expect(page.getByRole('button', { name: /Members \(/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Questions \(/ })).toHaveCount(0);
 
   await nav(page).getByRole('link', { name: 'Quizzes' }).click();
   await expect(page.getByRole('heading', { name: QUIZ_TITLE })).toBeVisible();
   await expect(page.getByText(/Attempts:\s*0\s*\/\s*2/)).toBeVisible().catch(() => note('Quiz card did not show "Attempts: 0/2"'));
-  await shot(page, 'student-quizzes');
+  await shot(page, 'member-quizzes');
 });
 
-test('13 · student takes the quiz — attempt 1, all answers correct', async () => {
+test('13 · member takes the quiz — attempt 1, all answers correct', async () => {
   test.setTimeout(180_000);
   await nav(page).getByRole('link', { name: 'Quizzes' }).click();
   await page.getByRole('link', { name: /Start/ }).first().click();
   await expect(page.getByText(/Before you begin/)).toBeVisible();
   await page.getByRole('button', { name: /Start \/ resume assessment/ }).click();
-  await page.waitForURL(/\/student\/attempt\//);
+  await page.waitForURL(/\/member\/attempt\//);
   await shot(page, 'quiz-taking');
 
   // there should be a running timer
@@ -397,10 +397,10 @@ test('13 · student takes the quiz — attempt 1, all answers correct', async ()
   await expect(page.getByText(/Submit your assessment\?/)).toBeVisible();
   await page.getByRole('button', { name: 'Submit now' }).click();
 
-  await page.waitForURL(/\/student\/results\//, { timeout: 120_000 });
+  await page.waitForURL(/\/member\/results\//, { timeout: 120_000 });
   await expect(page.getByRole('heading', { name: 'Assessment review' })).toBeVisible();
   await expect(page.getByText('AI graded')).toBeVisible({ timeout: 45_000 });
-  await shot(page, 'student-result-attempt1');
+  await shot(page, 'member-result-attempt1');
 
   // correctness: score > 0, MCQ + TF marked correct, short answer AI-evaluated
   const scoreText = await page.locator('.text-3xl.font-black').first().innerText();
@@ -432,13 +432,13 @@ test('13 · student takes the quiz — attempt 1, all answers correct', async ()
   }
 });
 
-test('14 · student takes attempt 2 with a wrong MCQ answer — incorrect grading shows model answer', async () => {
+test('14 · member takes attempt 2 with a wrong MCQ answer — incorrect grading shows model answer', async () => {
   test.setTimeout(180_000);
   await nav(page).getByRole('link', { name: 'Quizzes' }).click();
   await expect(page.getByText(/Attempts:\s*1\s*\/\s*2/)).toBeVisible().catch(() => note('Quiz card did not show "Attempts: 1/2" before attempt 2'));
   await page.getByRole('link', { name: /Start|Resume/ }).first().click();
   await page.getByRole('button', { name: /Start \/ resume assessment/ }).click();
-  await page.waitForURL(/\/student\/attempt\//);
+  await page.waitForURL(/\/member\/attempt\//);
 
   for (let i = 0; i < 3; i++) {
     const heading = await page.getByRole('heading', { level: 2 }).first().innerText();
@@ -454,7 +454,7 @@ test('14 · student takes attempt 2 with a wrong MCQ answer — incorrect gradin
   }
   await page.getByRole('button', { name: /Finish/ }).click();
   await page.getByRole('button', { name: 'Submit now' }).click();
-  await page.waitForURL(/\/student\/results\//, { timeout: 120_000 });
+  await page.waitForURL(/\/member\/results\//, { timeout: 120_000 });
   await expect(page.getByText('AI graded')).toBeVisible({ timeout: 45_000 });
 
   const q1 = page.locator('div.shadow-xs', { hasText: MCQ.text }).filter({ hasText: /Earned/ }).first();
@@ -466,42 +466,42 @@ test('14 · student takes attempt 2 with a wrong MCQ answer — incorrect gradin
   if (await q1.getByRole('link').filter({ hasText: /./ }).first().isVisible().catch(() => false)) {
     note('Missed question shows a supplementary online reference link');
   }
-  await shot(page, 'student-result-attempt2');
+  await shot(page, 'member-result-attempt2');
 });
 
-test('15 · student browses results history', async () => {
+test('15 · member browses results history', async () => {
   await nav(page).getByRole('link', { name: 'Results & Insights' }).click();
   await expect(page.getByText(QUIZ_TITLE).first()).toBeVisible();
-  await shot(page, 'student-results-list');
+  await shot(page, 'member-results-list');
 });
 
-test('16 · student is blocked from lecturer-only routes', async () => {
-  for (const route of ['/lecturer', '/lecturer/materials', '/lecturer/questions', '/lecturer/analytics']) {
+test('16 · member is blocked from leader-only routes', async () => {
+  for (const route of ['/leader', '/leader/materials', '/leader/questions', '/leader/analytics']) {
     await page.goto(route);
-    await expect(page).toHaveURL(/\/student(\/|$)/);
+    await expect(page).toHaveURL(/\/member(\/|$)/);
   }
-  note('Lecturer routes correctly redirect a student to /student');
+  note('Leader routes correctly redirect a member to /member');
   await logout(page);
 });
 
-test('17 · lecturer sees the submissions and opens the AI review', async () => {
-  await login(page, lecturer.email);
+test('17 · leader sees the submissions and opens the AI review', async () => {
+  await login(page, leader.email);
   await nav(page).getByRole('link', { name: 'Analytics & Grades' }).click();
   await page.getByText(QUIZ_TITLE).click();
-  await expect(page.getByRole('heading', { name: /Student submissions/ })).toBeVisible();
-  await expect(page.getByText(student.name).first()).toBeVisible();
-  await shot(page, 'lecturer-quiz-analytics');
+  await expect(page.getByRole('heading', { name: /Member submissions/ })).toBeVisible();
+  await expect(page.getByText(member.name).first()).toBeVisible();
+  await shot(page, 'leader-quiz-analytics');
 
   await page.getByRole('button', { name: 'Review', exact: true }).first().click();
   await expect(page.getByText('Question breakdown')).toBeVisible();
-  await expect(page.getByText(`${student.name} —`)).toBeVisible();
-  await shot(page, 'lecturer-review');
+  await expect(page.getByText(`${member.name} —`)).toBeVisible();
+  await shot(page, 'leader-review');
 });
 
 test('18 · wrong OTP is rejected', async () => {
   await logout(page).catch(() => page.goto('/login'));
   await page.goto('/login');
-  await page.getByLabel('Email address').fill(lecturer.email);
+  await page.getByLabel('Email address').fill(leader.email);
   await page.getByRole('button', { name: /Send sign-in code/ }).click();
   await page.getByPlaceholder('000000').waitFor();
   await page.getByPlaceholder('000000').fill('000000');

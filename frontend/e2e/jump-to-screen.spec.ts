@@ -18,14 +18,14 @@ async function finishOtp(page: Page) {
   const code = (await banner.locator('strong').innerText()).trim();
   await page.getByPlaceholder('000000').fill(code);
   await page.getByRole('button', { name: /Verify & continue/ }).click();
-  await page.waitForURL(/\/(student|lecturer)($|\/)/);
+  await page.waitForURL(/\/(member|leader)($|\/)/);
   await page.getByRole('button', { name: 'Close guide' }).click({ timeout: 6_000 }).catch(() => {});
 }
 
-async function register(page: Page, name: string, email: string, role: 'student' | 'lecturer') {
+async function register(page: Page, name: string, email: string, role: 'member' | 'leader') {
   await page.goto('/login');
   await page.getByRole('button', { name: 'Register', exact: true }).click();
-  if (role === 'lecturer') await page.getByRole('button', { name: /Faculty \/ Lecturer/ }).click();
+  if (role === 'leader') await page.getByRole('button', { name: /Faculty \/ Leader/ }).click();
   await page.getByLabel('Full name').fill(name);
   await page.getByLabel('Email address').fill(email);
   await page.getByRole('button', { name: /Create account/ }).click();
@@ -37,15 +37,15 @@ const menu = (page: Page) => page.getByRole('menu');
 
 test.describe.configure({ mode: 'serial' });
 
-test('lecturer — jump menu lists lecturer screens and navigates', async ({ page }) => {
+test('leader — jump menu lists leader screens and navigates', async ({ page }) => {
   const stamp = Date.now();
-  await register(page, 'Jump Lecturer', `jump.lect.${stamp}@audit.local`, 'lecturer');
+  await register(page, 'Jump Leader', `jump.lect.${stamp}@audit.local`, 'leader');
 
   await expect(jump(page)).toBeVisible();
   await jump(page).click();
   await expect(menu(page)).toBeVisible();
 
-  // full lecturer screen set
+  // full leader screen set
   for (const label of [
     'Dashboard',
     'Classes',
@@ -58,7 +58,7 @@ test('lecturer — jump menu lists lecturer screens and navigates', async ({ pag
   ]) {
     await expect(menu(page).getByRole('menuitem', { name: new RegExp(label) })).toBeVisible();
   }
-  // no student-only screens leak in
+  // no member-only screens leak in
   await expect(menu(page).getByRole('menuitem', { name: /Results & Insights/ })).toHaveCount(0);
 
   // current screen is flagged
@@ -68,13 +68,13 @@ test('lecturer — jump menu lists lecturer screens and navigates', async ({ pag
   await page.getByPlaceholder('Search screens…').fill('bank');
   await expect(menu(page).getByRole('menuitem')).toHaveCount(1);
   await page.getByPlaceholder('Search screens…').press('Enter');
-  await expect(page).toHaveURL(/\/lecturer\/questions$/);
+  await expect(page).toHaveURL(/\/leader\/questions$/);
   await expect(menu(page)).toHaveCount(0);
 
   // reopen, click-navigate, and Escape
   await jump(page).click();
   await menu(page).getByRole('menuitem', { name: /Analytics & Grades/ }).click();
-  await expect(page).toHaveURL(/\/lecturer\/analytics$/);
+  await expect(page).toHaveURL(/\/leader\/analytics$/);
 
   await jump(page).click();
   await expect(menu(page)).toBeVisible();
@@ -82,9 +82,9 @@ test('lecturer — jump menu lists lecturer screens and navigates', async ({ pag
   await expect(menu(page)).toHaveCount(0);
 });
 
-test('student — jump menu is scoped to student screens', async ({ page }) => {
+test('member — jump menu is scoped to member screens', async ({ page }) => {
   const stamp = Date.now();
-  await register(page, 'Jump Student', `jump.stud.${stamp}@audit.local`, 'student');
+  await register(page, 'Jump Member', `jump.stud.${stamp}@audit.local`, 'member');
 
   await jump(page).click();
   for (const label of ['Dashboard', 'Quizzes', 'Results & Insights', 'My Courses', 'Manage profile']) {
@@ -93,5 +93,5 @@ test('student — jump menu is scoped to student screens', async ({ page }) => {
   await expect(menu(page).getByRole('menuitem', { name: /Question Bank/ })).toHaveCount(0);
 
   await menu(page).getByRole('menuitem', { name: /Results & Insights/ }).click();
-  await expect(page).toHaveURL(/\/student\/results$/);
+  await expect(page).toHaveURL(/\/member\/results$/);
 });

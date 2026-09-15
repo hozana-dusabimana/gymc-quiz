@@ -30,7 +30,7 @@ async function loginExisting(page: Page, email: string) {
   const code = (await banner.locator('strong').innerText()).trim();
   await page.getByPlaceholder('000000').fill(code);
   await page.getByRole('button', { name: /Verify & continue/ }).click();
-  await page.waitForURL(/\/(student|lecturer)/);
+  await page.waitForURL(/\/(member|leader)/);
   await dismissGuide(page);
 }
 
@@ -44,24 +44,24 @@ async function dismissGuide(page: Page) {
 
 const stamp = Date.now();
 
-test('responsive — auth + student journey at every breakpoint', async ({ browser }) => {
-  // seed a lecturer + student + published quiz through the API layer of the UI once
+test('responsive — auth + member journey at every breakpoint', async ({ browser }) => {
+  // seed a leader + member + published quiz through the API layer of the UI once
   const setup = await browser.newPage();
-  const lecturerEmail = `r.lect.${stamp}@e2e.local`;
-  const studentEmail = `r.stud.${stamp}@e2e.local`;
+  const leaderEmail = `r.lect.${stamp}@e2e.local`;
+  const memberEmail = `r.stud.${stamp}@e2e.local`;
 
   await setup.goto('/login');
   await setup.getByRole('button', { name: 'Register', exact: true }).click();
-  await setup.getByRole('button', { name: /Faculty \/ Lecturer/ }).click();
-  await setup.getByLabel('Full name').fill('Responsive Lecturer');
-  await setup.getByLabel('Email address').fill(lecturerEmail);
+  await setup.getByRole('button', { name: /Faculty \/ Leader/ }).click();
+  await setup.getByLabel('Full name').fill('Responsive Leader');
+  await setup.getByLabel('Email address').fill(leaderEmail);
   await setup.getByRole('button', { name: /Create account/ }).click();
   {
     const b = setup.getByText(/your code is/i);
     await b.waitFor();
     await setup.getByPlaceholder('000000').fill((await b.locator('strong').innerText()).trim());
     await setup.getByRole('button', { name: /Verify & continue/ }).click();
-    await setup.waitForURL(/\/lecturer/);
+    await setup.waitForURL(/\/leader/);
     await dismissGuide(setup);
   }
   await setup.locator('aside').getByRole('link', { name: 'Courses' }).click();
@@ -88,30 +88,30 @@ test('responsive — auth + student journey at every breakpoint', async ({ brows
   await setup.getByRole('button', { name: /Publish/ }).click();
   await expect(setup.getByText('Quiz published').first()).toBeVisible();
 
-  // enrol student (needs the student to exist first)
+  // enrol member (needs the member to exist first)
   const s2 = await browser.newPage();
   await s2.goto('/login');
   await s2.getByRole('button', { name: 'Register', exact: true }).click();
-  await s2.getByLabel('Full name').fill('Responsive Student');
-  await s2.getByLabel('Email address').fill(studentEmail);
+  await s2.getByLabel('Full name').fill('Responsive Member');
+  await s2.getByLabel('Email address').fill(memberEmail);
   await s2.getByRole('button', { name: /Create account/ }).click();
   {
     const b = s2.getByText(/your code is/i);
     await b.waitFor();
     await s2.getByPlaceholder('000000').fill((await b.locator('strong').innerText()).trim());
     await s2.getByRole('button', { name: /Verify & continue/ }).click();
-    await s2.waitForURL(/\/student/);
+    await s2.waitForURL(/\/member/);
     await dismissGuide(s2);
   }
   await s2.close();
 
   await setup.locator('aside').getByRole('link', { name: 'Courses' }).click();
   await setup.getByText('Responsive Course').click();
-  await setup.getByRole('button', { name: /Students \(/ }).click();
-  await setup.getByRole('button', { name: 'Add student' }).click();
-  await setup.getByLabel('Student email').fill(studentEmail);
+  await setup.getByRole('button', { name: /Members \(/ }).click();
+  await setup.getByRole('button', { name: 'Add member' }).click();
+  await setup.getByLabel('Member email').fill(memberEmail);
   await setup.getByRole('button', { name: 'Enrol' }).click();
-  await expect(setup.getByText('Student enrolled').first()).toBeVisible();
+  await expect(setup.getByText('Member enrolled').first()).toBeVisible();
   await setup.close();
 
   // ---- now walk key screens at each viewport ----
@@ -123,8 +123,8 @@ test('responsive — auth + student journey at every breakpoint', async ({ brows
     await noHorizontalOverflow(page, `login @ ${vp.name}`);
     await page.screenshot({ path: path.join(SHOTS, `login-${vp.name}.png`), fullPage: true });
 
-    await loginExisting(page, studentEmail);
-    await noHorizontalOverflow(page, `student dashboard @ ${vp.name}`);
+    await loginExisting(page, memberEmail);
+    await noHorizontalOverflow(page, `member dashboard @ ${vp.name}`);
     await page.screenshot({ path: path.join(SHOTS, `dashboard-${vp.name}.png`), fullPage: true });
 
     await (vp.width < 768
@@ -137,7 +137,7 @@ test('responsive — auth + student journey at every breakpoint', async ({ brows
 
     await page.getByRole('link', { name: /Start/ }).first().click();
     await page.getByRole('button', { name: /Start \/ resume assessment/ }).click();
-    await page.waitForURL(/\/student\/attempt\//);
+    await page.waitForURL(/\/member\/attempt\//);
     await expect(page.getByRole('heading', { name: 'Responsive Quiz' })).toBeVisible();
     await noHorizontalOverflow(page, `quiz taking @ ${vp.name}`);
     await page.screenshot({ path: path.join(SHOTS, `quiz-taking-${vp.name}.png`), fullPage: true });
@@ -145,7 +145,7 @@ test('responsive — auth + student journey at every breakpoint', async ({ brows
     await page.getByRole('button', { name: 'True', exact: false }).and(page.locator('button.border-2')).click();
     await page.getByRole('button', { name: /Finish/ }).click();
     await page.getByRole('button', { name: 'Submit now' }).click();
-    await page.waitForURL(/\/student\/results\//, { timeout: 60_000 });
+    await page.waitForURL(/\/member\/results\//, { timeout: 60_000 });
     await noHorizontalOverflow(page, `result @ ${vp.name}`);
     await page.screenshot({ path: path.join(SHOTS, `result-${vp.name}.png`), fullPage: true });
 
