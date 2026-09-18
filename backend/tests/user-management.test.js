@@ -190,3 +190,65 @@ describe('leaders manage member accounts', () => {
     expect(res.body.data.user.role).toBe('leader');
   });
 });
+
+describe('an admin can see and manage everyone through /api/users/members', () => {
+  it('lists members, leaders and admins alike', async () => {
+    const token = await adminToken();
+    const leader = await signup('leader');
+    const member = await signup('member');
+    const res = await request.get('/api/users/members').set(auth(token));
+    expect(res.status).toBe(200);
+    const emails = res.body.data.members.map((u) => u.email);
+    expect(emails).toContain(leader.email.toLowerCase());
+    expect(emails).toContain(member.email.toLowerCase());
+    expect(res.body.data.members.some((u) => u.role === 'admin')).toBe(true);
+  });
+
+  it('a leader only sees members, not other leaders/admins', async () => {
+    const leaderToken = (await signup('leader')).token;
+    const otherLeader = await signup('leader');
+    const res = await request.get('/api/users/members').set(auth(leaderToken));
+    expect(res.status).toBe(200);
+    expect(res.body.data.members.some((u) => u.email === otherLeader.email.toLowerCase())).toBe(false);
+    expect(res.body.data.members.every((u) => u.role === 'member')).toBe(true);
+  });
+
+  it('an admin can open and edit another admin\'s detail/profile here', async () => {
+    const token = await adminToken();
+    const other = await signup('admin');
+    const detail = await request.get(`/api/users/members/${other.user.id}`).set(auth(token));
+    expect(detail.status).toBe(200);
+    expect(detail.body.data.member.role).toBe('admin');
+
+    const edit = await request
+      .patch(`/api/users/members/${other.user.id}`)
+      .set(auth(token))
+      .send({ name: 'Renamed Admin' });
+    expect(edit.status).toBe(200);
+    expect(edit.body.data.user.name).toBe('Renamed Admin');
+  });
+
+  it('an admin cannot deactivate or change their own role here', async () => {
+    const token = await adminToken();
+    const me = await request.get('/api/auth/me').set(auth(token));
+
+    const deactivate = await request
+      .patch(`/api/users/members/${me.body.data.user.id}`)
+      .set(auth(token))
+      .send({ isActive: false });
+    expect(deactivate.status).toBe(422);
+
+    const changeRole = await request
+      .patch(`/api/users/members/${me.body.data.user.id}`)
+      .set(auth(token))
+      .send({ role: 'leader' });
+    expect(changeRole.status).toBe(422);
+  });
+
+  it('a leader still cannot reach a leader/admin account here, even for viewing', async () => {
+    const leaderToken = (await signup('leader')).token;
+    const otherAdmin = await signup('admin');
+    const res = await request.get(`/api/users/members/${otherAdmin.user.id}`).set(auth(leaderToken));
+    expect(res.status).toBe(404);
+  });
+});

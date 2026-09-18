@@ -175,10 +175,10 @@ export const Admin = {
     http.patch<{ user: StaffUser }>(`/admin/users/${id}`, body).then((r) => r.user),
 };
 
-// ---- members (list/edit choir members — leader or admin) ----
+// ---- members (list/edit accounts — leader sees members only, admin sees everyone) ----
 export interface MemberUser {
   id: string;
-  role: 'member';
+  role: 'member' | 'leader' | 'admin';
   name: string;
   email: string;
   phone: string | null;

@@ -8,7 +8,12 @@ import { useToast } from '@/components/ui/Toast';
 import { ApiError } from '@/lib/api';
 import { formatDate, timeAgo, pct } from '@/lib/format';
 
+const ROLE_TONE = { member: 'slate', leader: 'indigo', admin: 'amber' } as const;
+const ROLE_LABEL = { member: 'Member', leader: 'Leader', admin: 'Admin' } as const;
+
 export function MembersPage() {
+  const { user: me } = useAuth();
+  const isAdmin = me?.role === 'admin';
   const { data, loading, error, refetch } = useQuery(() => Members.list(), []);
   const toast = useToast();
   const [query, setQuery] = useState('');
@@ -35,7 +40,10 @@ export function MembersPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      <PageHeader title="Members" subtitle="View, edit and manage choir member accounts" />
+      <PageHeader
+        title="Members"
+        subtitle={isAdmin ? 'View, edit and manage every account — members, leaders and admins' : 'View, edit and manage choir member accounts'}
+      />
 
       {loading && <LoadingState />}
       {error && <ErrorState error={error} onRetry={refetch} />}
@@ -62,6 +70,7 @@ export function MembersPage() {
                 <tr>
                   <th className="p-3">Name</th>
                   <th className="p-3">Contact</th>
+                  {isAdmin && <th className="p-3">Role</th>}
                   <th className="p-3">Courses</th>
                   <th className="p-3">Quizzes</th>
                   <th className="p-3">Average</th>
@@ -70,18 +79,25 @@ export function MembersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filtered.map((m) => (
+                {filtered.map((m) => {
+                  const isSelf = m.id === me?.id;
+                  return (
                   <tr key={m.id} className={`hover:bg-slate-50 ${!m.isActive ? 'opacity-50' : ''}`}>
                     <td className="p-3">
                       <div className="font-bold text-slate-900">{m.name}</div>
                       <div className="text-[10px] text-slate-400">
-                        {m.memberNumber || 'No member #'} · joined {formatDate(m.createdAt)}
+                        {m.role === 'member' ? m.memberNumber || 'No member #' : ROLE_LABEL[m.role]} · joined {formatDate(m.createdAt)}
                       </div>
                     </td>
                     <td className="p-3 text-slate-500">
                       <div>{m.email}</div>
                       {m.phone && <div className="text-[10px] text-slate-400">{m.phone}</div>}
                     </td>
+                    {isAdmin && (
+                      <td className="p-3">
+                        <Badge tone={ROLE_TONE[m.role]}>{ROLE_LABEL[m.role]}</Badge>
+                      </td>
+                    )}
                     <td className="p-3 text-slate-600 font-semibold">{m.coursesCount}</td>
                     <td className="p-3 text-slate-600 font-semibold">{m.quizzesTaken}</td>
                     <td className="p-3 font-bold text-slate-900">{m.averageScore != null ? pct(m.averageScore, 1) : '—'}</td>
@@ -98,15 +114,17 @@ export function MembersPage() {
                         </button>
                         <button
                           onClick={() => toggleActive(m)}
-                          className={`p-1.5 rounded-lg ${m.isActive ? 'text-slate-400 hover:text-rose-600' : 'text-slate-400 hover:text-emerald-600'}`}
-                          title={m.isActive ? 'Deactivate' : 'Reactivate'}
+                          disabled={isSelf}
+                          className={`p-1.5 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed ${m.isActive ? 'text-slate-400 hover:text-rose-600' : 'text-slate-400 hover:text-emerald-600'}`}
+                          title={isSelf ? 'You cannot deactivate your own account' : m.isActive ? 'Deactivate' : 'Reactivate'}
                         >
                           <span className="material-symbols-outlined text-base">{m.isActive ? 'block' : 'restart_alt'}</span>
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
             {filtered.length === 0 && (
@@ -196,6 +214,7 @@ function EditMemberModal({ member, onClose, onSaved }: { member: MemberUser; onC
   const toast = useToast();
   const { user: me } = useAuth();
   const isAdmin = me?.role === 'admin';
+  const isSelf = me?.id === member.id;
   const [name, setName] = useState(member.name);
   const [email, setEmail] = useState(member.email);
   const [phone, setPhone] = useState(member.phone || '');
@@ -231,18 +250,26 @@ function EditMemberModal({ member, onClose, onSaved }: { member: MemberUser; onC
           <span className="font-semibold text-slate-700 block mb-1">Phone</span>
           <input required minLength={6} value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-2.5 rounded-xl border border-slate-300" />
         </label>
-        <label className="block">
-          <span className="font-semibold text-slate-700 block mb-1">Member number</span>
-          <input value={memberNumber} onChange={(e) => setMemberNumber(e.target.value)} placeholder="e.g. GYMC/001" className="w-full p-2.5 rounded-xl border border-slate-300" />
-        </label>
+        {member.role === 'member' && (
+          <label className="block">
+            <span className="font-semibold text-slate-700 block mb-1">Member number</span>
+            <input value={memberNumber} onChange={(e) => setMemberNumber(e.target.value)} placeholder="e.g. GYMC/001" className="w-full p-2.5 rounded-xl border border-slate-300" />
+          </label>
+        )}
         {isAdmin && (
           <label className="block">
             <span className="font-semibold text-slate-700 block mb-1">Role</span>
-            <select value={role} onChange={(e) => setRole(e.target.value as 'member' | 'leader' | 'admin')} className="w-full p-2.5 rounded-xl border border-slate-300 bg-white">
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as 'member' | 'leader' | 'admin')}
+              disabled={isSelf}
+              className="w-full p-2.5 rounded-xl border border-slate-300 bg-white disabled:opacity-60"
+            >
               <option value="member">Choir member</option>
               <option value="leader">Choir leader</option>
               <option value="admin">Administrator</option>
             </select>
+            {isSelf && <span className="block mt-1 text-[10px] text-slate-400">You cannot change your own role.</span>}
           </label>
         )}
         <div className="flex justify-end gap-3 pt-1">

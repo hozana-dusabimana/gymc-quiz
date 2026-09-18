@@ -153,11 +153,14 @@ router.get(
   }),
 );
 
-// GET /api/users/members — every choir member, with enrolment/attempt stats (leader/admin)
+// GET /api/users/members — every account, with enrolment/attempt stats
+// (leader/admin). A leader only sees choir members; an admin sees everyone,
+// including other leaders and admins, since they alone may change roles.
 router.get(
   '/members',
   requireRole('leader', 'admin'),
   asyncHandler(async (req, res) => {
+    const scope = req.user.role === 'admin' ? '' : "WHERE u.role = 'member'";
     const { rows } = await query(
       `SELECT u.*,
               (SELECT count(*) FROM enrollments e WHERE e.member_id = u.id) AS courses_count,
@@ -165,7 +168,7 @@ router.get(
               (SELECT round(avg(a.percentage)::numeric, 1) FROM quiz_attempts a
                 WHERE a.member_id = u.id AND a.status = 'completed') AS avg_score
          FROM users u
-        WHERE u.role = 'member'
+         ${scope}
         ORDER BY u.created_at DESC`,
     );
     ok(res, {
@@ -179,13 +182,15 @@ router.get(
   }),
 );
 
-// GET /api/users/members/:id — full detail for one member (leader/admin)
+// GET /api/users/members/:id — full detail for one account (leader/admin).
+// A leader is limited to members; an admin can open anyone.
 router.get(
   '/members/:id',
   requireRole('leader', 'admin'),
   asyncHandler(async (req, res) => {
     const target = await findUserById(req.params.id);
-    if (!target || target.role !== 'member') throw errors.notFound('Member not found');
+    if (!target) throw errors.notFound('Member not found');
+    if (target.role !== 'member' && req.user.role !== 'admin') throw errors.notFound('Member not found');
     const { rows } = await query(
       `SELECT c.id, c.code, c.title, e.created_at AS enrolled_at,
               (SELECT round(avg(a.percentage)::numeric, 1) FROM quiz_attempts a
@@ -218,9 +223,10 @@ const memberUpdateSchema = z.object({
   role: z.enum(['member', 'leader', 'admin']).optional(),
 });
 
-// PATCH /api/users/members/:id — edit or deactivate/reactivate a member (leader/admin).
-// Only an admin may promote a member to leader/admin — a leader can edit a
-// member's profile but not their role.
+// PATCH /api/users/members/:id — edit or deactivate/reactivate an account
+// (leader/admin). A leader is limited to editing members, and can never
+// change a role. An admin can reach anyone, including other admins, but
+// can't touch their own status/role here (use /api/admin/users for that).
 router.patch(
   '/members/:id',
   requireRole('leader', 'admin'),
@@ -229,8 +235,15 @@ router.patch(
     if (req.body.role !== undefined && req.user.role !== 'admin') {
       throw errors.forbidden('Only an admin can change a member’s role');
     }
+    if (req.params.id === req.user.id) {
+      if (req.body.isActive === false) throw errors.validation('You cannot deactivate your own account');
+      if (req.body.role !== undefined && req.body.role !== req.user.role) {
+        throw errors.validation('You cannot change your own role');
+      }
+    }
     const target = await findUserById(req.params.id);
-    if (!target || target.role !== 'member') throw errors.notFound('Member not found');
+    if (!target) throw errors.notFound('Member not found');
+    if (target.role !== 'member' && req.user.role !== 'admin') throw errors.notFound('Member not found');
     const allow = ['name', 'email', 'phone', 'memberNumber', 'isActive'];
     if (req.body.role !== undefined) allow.push('role');
     const user = await updateUser(req.params.id, req.body, allow);
