@@ -227,50 +227,97 @@ export function CourseWorkspacePage() {
             />
           )}
           {!members.error && (members.data?.length ?? 0) > 0 && (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
-                  <tr>
-                    <th className="p-3">Member</th>
-                    <th className="p-3">Number</th>
-                    <th className="p-3">Enrolled</th>
-                    <th className="p-3">Attempts</th>
-                    <th className="p-3">Average</th>
-                    <th className="p-3 w-10" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {(members.data || []).map((s) => (
-                    <tr key={s.id} className="hover:bg-slate-50">
-                      <td className="p-3">
+            <div className="rounded-xl border border-slate-200 overflow-hidden">
+              {/* Mobile: stacked cards */}
+              <div className="sm:hidden divide-y divide-slate-100">
+                {(members.data || []).map((s) => (
+                  <div key={s.id} className="p-3.5 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
                         <div className="font-bold text-slate-900">{s.name}</div>
-                        <div className="text-[10px] text-slate-400">{s.email}</div>
-                      </td>
-                      <td className="p-3 font-mono text-slate-600">{s.memberNumber || '—'}</td>
-                      <td className="p-3 text-slate-500">{formatDate(s.enrolledAt)}</td>
-                      <td className="p-3 text-slate-600">{s.attemptsCount}</td>
-                      <td className="p-3 font-bold text-slate-900">{s.averageScore != null ? `${s.averageScore}%` : '—'}</td>
-                      <td className="p-3">
-                        <button
-                          title={`Remove ${s.name}`}
-                          onClick={async () => {
-                            try {
-                              await Courses.unenroll(c.id, s.id);
-                              members.refetch();
-                              course.refetch();
-                            } catch (err) {
-                              toast.error(err instanceof ApiError ? err.message : 'Could not remove member');
-                            }
-                          }}
-                          className="text-slate-300 hover:text-rose-600 transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-base">person_remove</span>
-                        </button>
-                      </td>
+                        <div className="text-[10px] text-slate-400 truncate">{s.email}</div>
+                      </div>
+                      <button
+                        title={`Remove ${s.name}`}
+                        onClick={async () => {
+                          try {
+                            await Courses.unenroll(c.id, s.id);
+                            members.refetch();
+                            course.refetch();
+                          } catch (err) {
+                            toast.error(err instanceof ApiError ? err.message : 'Could not remove member');
+                          }
+                        }}
+                        className="text-slate-300 hover:text-rose-600 transition-colors shrink-0"
+                      >
+                        <span className="material-symbols-outlined text-base">person_remove</span>
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+                      <div>
+                        <div className="text-[9px] uppercase font-bold text-slate-400">Number</div>
+                        <div className="font-mono text-slate-600">{s.memberNumber || '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[9px] uppercase font-bold text-slate-400">Attempts</div>
+                        <div className="font-semibold text-slate-700">{s.attemptsCount}</div>
+                      </div>
+                      <div>
+                        <div className="text-[9px] uppercase font-bold text-slate-400">Average</div>
+                        <div className="font-bold text-slate-900">{s.averageScore != null ? `${s.averageScore}%` : '—'}</div>
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-slate-400">Enrolled {formatDate(s.enrolledAt)}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Tablet/desktop: table */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                    <tr>
+                      <th className="p-3">Member</th>
+                      <th className="p-3">Number</th>
+                      <th className="p-3">Enrolled</th>
+                      <th className="p-3">Attempts</th>
+                      <th className="p-3">Average</th>
+                      <th className="p-3 w-10" />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {(members.data || []).map((s) => (
+                      <tr key={s.id} className="hover:bg-slate-50">
+                        <td className="p-3">
+                          <div className="font-bold text-slate-900">{s.name}</div>
+                          <div className="text-[10px] text-slate-400">{s.email}</div>
+                        </td>
+                        <td className="p-3 font-mono text-slate-600">{s.memberNumber || '—'}</td>
+                        <td className="p-3 text-slate-500">{formatDate(s.enrolledAt)}</td>
+                        <td className="p-3 text-slate-600">{s.attemptsCount}</td>
+                        <td className="p-3 font-bold text-slate-900">{s.averageScore != null ? `${s.averageScore}%` : '—'}</td>
+                        <td className="p-3">
+                          <button
+                            title={`Remove ${s.name}`}
+                            onClick={async () => {
+                              try {
+                                await Courses.unenroll(c.id, s.id);
+                                members.refetch();
+                                course.refetch();
+                              } catch (err) {
+                                toast.error(err instanceof ApiError ? err.message : 'Could not remove member');
+                              }
+                            }}
+                            className="text-slate-300 hover:text-rose-600 transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-base">person_remove</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

@@ -110,6 +110,48 @@ export function AdminDashboardPage() {
           )}
           {!loading && !error && (data?.length ?? 0) > 0 && (
             <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white">
+              {/* Mobile: stacked cards */}
+              <div className="sm:hidden divide-y divide-slate-100">
+                {(data || []).map((u) => (
+                  <div key={u.id} className={`p-3.5 space-y-2.5 ${!u.isActive ? 'opacity-50' : ''}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-bold text-slate-900">{u.name}</div>
+                        <div className="text-[10px] text-slate-400">
+                          Joined {formatDate(u.createdAt)} · {u.lastLoginAt ? `active ${timeAgo(u.lastLoginAt)}` : 'never signed in'}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button onClick={() => setEditing(u)} className="p-1.5 text-slate-400 hover:text-amber-600 rounded-lg" title="Edit">
+                          <span className="material-symbols-outlined text-base">edit</span>
+                        </button>
+                        <button
+                          onClick={() => toggleActive(u)}
+                          className={`p-1.5 rounded-lg ${u.isActive ? 'text-slate-400 hover:text-rose-600' : 'text-slate-400 hover:text-emerald-600'}`}
+                          title={u.isActive ? 'Deactivate' : 'Reactivate'}
+                        >
+                          <span className="material-symbols-outlined text-base">{u.isActive ? 'block' : 'restart_alt'}</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="text-slate-500">
+                      <div className="truncate">{u.email}</div>
+                      {u.phone && <div className="text-[10px] text-slate-400">{u.phone}</div>}
+                    </div>
+                    <div className="flex items-center flex-wrap gap-1.5">
+                      <Badge tone={u.role === 'admin' ? 'amber' : 'indigo'}>{u.role}</Badge>
+                      <Badge tone={u.isActive ? 'emerald' : 'rose'}>{u.isActive ? 'Active' : 'Deactivated'}</Badge>
+                    </div>
+                    <div className="pt-2 border-t border-slate-100">
+                      <div className="text-[9px] uppercase font-bold text-slate-400">Courses</div>
+                      <div className="font-semibold text-slate-700">{u.coursesCount}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Tablet/desktop: table */}
+              <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
                   <tr>
@@ -159,6 +201,7 @@ export function AdminDashboardPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </div>

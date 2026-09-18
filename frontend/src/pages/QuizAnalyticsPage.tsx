@@ -146,53 +146,100 @@ export function QuizAnalyticsPage() {
         )}
 
         {rows.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
-                <tr>
-                  <th className="p-3">Member</th>
-                  <th className="p-3">Submitted</th>
-                  <th className="p-3">Score</th>
-                  <th className="p-3">%</th>
-                  <th className="p-3">Time</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {rows.map((a) => (
-                  <tr key={a.id} className="hover:bg-slate-50">
-                    <td className="p-3">
+          <div className="rounded-xl border border-slate-200 overflow-hidden">
+            {/* Mobile: stacked cards */}
+            <div className="sm:hidden divide-y divide-slate-100">
+              {rows.map((a) => (
+                <div key={a.id} className="p-3.5 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
                       <div className="font-bold text-slate-900">{a.memberName}</div>
-                      <div className="text-[10px] text-slate-400">{a.memberNumber || a.memberEmail}</div>
-                    </td>
-                    <td className="p-3 text-slate-600">{formatDateTime(a.submittedAt)}</td>
-                    <td className="p-3 font-bold text-slate-900">
-                      {a.score ?? '—'} / {a.maxScore ?? q.totalMarks}
-                    </td>
-                    <td className="p-3">
+                      <div className="text-[10px] text-slate-400 truncate">{a.memberNumber || a.memberEmail}</div>
+                    </div>
+                    <StatusPill status={a.status} />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+                    <div>
+                      <div className="text-[9px] uppercase font-bold text-slate-400">Score</div>
+                      <div className="font-bold text-slate-900">
+                        {a.score ?? '—'} / {a.maxScore ?? q.totalMarks}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] uppercase font-bold text-slate-400">%</div>
                       <span className={`font-bold ${(a.percentage ?? 0) >= q.passingScore ? 'text-emerald-600' : 'text-amber-600'}`}>
                         {pct(a.percentage)}
                       </span>
-                    </td>
-                    <td className="p-3 text-slate-600">{a.timeSpentMinutes ?? '—'} min</td>
-                    <td className="p-3">
-                      <StatusPill status={a.status} />
-                    </td>
-                    <td className="p-3 text-right">
-                      {a.status === 'completed' && (
-                        <button
-                          onClick={() => navigate(`/leader/results/${a.id}`)}
-                          className="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold rounded-lg"
-                        >
-                          Review
-                        </button>
-                      )}
-                    </td>
+                    </div>
+                    <div>
+                      <div className="text-[9px] uppercase font-bold text-slate-400">Time</div>
+                      <div className="text-slate-600">{a.timeSpentMinutes ?? '—'} min</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[10px] text-slate-400">Submitted {formatDateTime(a.submittedAt)}</div>
+                    {a.status === 'completed' && (
+                      <button
+                        onClick={() => navigate(`/leader/results/${a.id}`)}
+                        className="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold rounded-lg shrink-0"
+                      >
+                        Review
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Tablet/desktop: table */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                  <tr>
+                    <th className="p-3">Member</th>
+                    <th className="p-3">Submitted</th>
+                    <th className="p-3">Score</th>
+                    <th className="p-3">%</th>
+                    <th className="p-3">Time</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3 text-right">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {rows.map((a) => (
+                    <tr key={a.id} className="hover:bg-slate-50">
+                      <td className="p-3">
+                        <div className="font-bold text-slate-900">{a.memberName}</div>
+                        <div className="text-[10px] text-slate-400">{a.memberNumber || a.memberEmail}</div>
+                      </td>
+                      <td className="p-3 text-slate-600">{formatDateTime(a.submittedAt)}</td>
+                      <td className="p-3 font-bold text-slate-900">
+                        {a.score ?? '—'} / {a.maxScore ?? q.totalMarks}
+                      </td>
+                      <td className="p-3">
+                        <span className={`font-bold ${(a.percentage ?? 0) >= q.passingScore ? 'text-emerald-600' : 'text-amber-600'}`}>
+                          {pct(a.percentage)}
+                        </span>
+                      </td>
+                      <td className="p-3 text-slate-600">{a.timeSpentMinutes ?? '—'} min</td>
+                      <td className="p-3">
+                        <StatusPill status={a.status} />
+                      </td>
+                      <td className="p-3 text-right">
+                        {a.status === 'completed' && (
+                          <button
+                            onClick={() => navigate(`/leader/results/${a.id}`)}
+                            className="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold rounded-lg"
+                          >
+                            Review
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

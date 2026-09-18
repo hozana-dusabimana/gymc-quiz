@@ -65,47 +65,20 @@ export function MembersPage() {
           </div>
 
           <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
-                <tr>
-                  <th className="p-3">Name</th>
-                  <th className="p-3">Contact</th>
-                  {isAdmin && <th className="p-3">Role</th>}
-                  <th className="p-3">Courses</th>
-                  <th className="p-3">Quizzes</th>
-                  <th className="p-3">Average</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3 w-24" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filtered.map((m) => {
-                  const isSelf = m.id === me?.id;
-                  return (
-                  <tr key={m.id} className={`hover:bg-slate-50 ${!m.isActive ? 'opacity-50' : ''}`}>
-                    <td className="p-3">
-                      <div className="font-bold text-slate-900">{m.name}</div>
-                      <div className="text-[10px] text-slate-400">
-                        {m.role === 'member' ? m.memberNumber || 'No member #' : ROLE_LABEL[m.role]} · joined {formatDate(m.createdAt)}
+            {/* Mobile: stacked cards */}
+            <div className="sm:hidden divide-y divide-slate-100">
+              {filtered.map((m) => {
+                const isSelf = m.id === me?.id;
+                return (
+                  <div key={m.id} className={`p-3.5 space-y-2.5 ${!m.isActive ? 'opacity-50' : ''}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-bold text-slate-900">{m.name}</div>
+                        <div className="text-[10px] text-slate-400">
+                          {m.role === 'member' ? m.memberNumber || 'No member #' : ROLE_LABEL[m.role]} · joined {formatDate(m.createdAt)}
+                        </div>
                       </div>
-                    </td>
-                    <td className="p-3 text-slate-500">
-                      <div>{m.email}</div>
-                      {m.phone && <div className="text-[10px] text-slate-400">{m.phone}</div>}
-                    </td>
-                    {isAdmin && (
-                      <td className="p-3">
-                        <Badge tone={ROLE_TONE[m.role]}>{ROLE_LABEL[m.role]}</Badge>
-                      </td>
-                    )}
-                    <td className="p-3 text-slate-600 font-semibold">{m.coursesCount}</td>
-                    <td className="p-3 text-slate-600 font-semibold">{m.quizzesTaken}</td>
-                    <td className="p-3 font-bold text-slate-900">{m.averageScore != null ? pct(m.averageScore, 1) : '—'}</td>
-                    <td className="p-3">
-                      <Badge tone={m.isActive ? 'emerald' : 'rose'}>{m.isActive ? 'Active' : 'Deactivated'}</Badge>
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-1 justify-end">
+                      <div className="flex items-center gap-1 shrink-0">
                         <button onClick={() => setViewing(m)} className="p-1.5 text-slate-400 hover:text-amber-600 rounded-lg" title="View details">
                           <span className="material-symbols-outlined text-base">visibility</span>
                         </button>
@@ -121,12 +94,99 @@ export function MembersPage() {
                           <span className="material-symbols-outlined text-base">{m.isActive ? 'block' : 'restart_alt'}</span>
                         </button>
                       </div>
-                    </td>
+                    </div>
+                    <div className="text-slate-500">
+                      <div className="truncate">{m.email}</div>
+                      {m.phone && <div className="text-[10px] text-slate-400">{m.phone}</div>}
+                    </div>
+                    <div className="flex items-center flex-wrap gap-1.5">
+                      {isAdmin && <Badge tone={ROLE_TONE[m.role]}>{ROLE_LABEL[m.role]}</Badge>}
+                      <Badge tone={m.isActive ? 'emerald' : 'rose'}>{m.isActive ? 'Active' : 'Deactivated'}</Badge>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+                      <div>
+                        <div className="text-[9px] uppercase font-bold text-slate-400">Courses</div>
+                        <div className="font-semibold text-slate-700">{m.coursesCount}</div>
+                      </div>
+                      <div>
+                        <div className="text-[9px] uppercase font-bold text-slate-400">Quizzes</div>
+                        <div className="font-semibold text-slate-700">{m.quizzesTaken}</div>
+                      </div>
+                      <div>
+                        <div className="text-[9px] uppercase font-bold text-slate-400">Average</div>
+                        <div className="font-bold text-slate-900">{m.averageScore != null ? pct(m.averageScore, 1) : '—'}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Tablet/desktop: table */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                  <tr>
+                    <th className="p-3">Name</th>
+                    <th className="p-3">Contact</th>
+                    {isAdmin && <th className="p-3">Role</th>}
+                    <th className="p-3">Courses</th>
+                    <th className="p-3">Quizzes</th>
+                    <th className="p-3">Average</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3 w-24" />
                   </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filtered.map((m) => {
+                    const isSelf = m.id === me?.id;
+                    return (
+                    <tr key={m.id} className={`hover:bg-slate-50 ${!m.isActive ? 'opacity-50' : ''}`}>
+                      <td className="p-3">
+                        <div className="font-bold text-slate-900">{m.name}</div>
+                        <div className="text-[10px] text-slate-400">
+                          {m.role === 'member' ? m.memberNumber || 'No member #' : ROLE_LABEL[m.role]} · joined {formatDate(m.createdAt)}
+                        </div>
+                      </td>
+                      <td className="p-3 text-slate-500">
+                        <div>{m.email}</div>
+                        {m.phone && <div className="text-[10px] text-slate-400">{m.phone}</div>}
+                      </td>
+                      {isAdmin && (
+                        <td className="p-3">
+                          <Badge tone={ROLE_TONE[m.role]}>{ROLE_LABEL[m.role]}</Badge>
+                        </td>
+                      )}
+                      <td className="p-3 text-slate-600 font-semibold">{m.coursesCount}</td>
+                      <td className="p-3 text-slate-600 font-semibold">{m.quizzesTaken}</td>
+                      <td className="p-3 font-bold text-slate-900">{m.averageScore != null ? pct(m.averageScore, 1) : '—'}</td>
+                      <td className="p-3">
+                        <Badge tone={m.isActive ? 'emerald' : 'rose'}>{m.isActive ? 'Active' : 'Deactivated'}</Badge>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1 justify-end">
+                          <button onClick={() => setViewing(m)} className="p-1.5 text-slate-400 hover:text-amber-600 rounded-lg" title="View details">
+                            <span className="material-symbols-outlined text-base">visibility</span>
+                          </button>
+                          <button onClick={() => setEditing(m)} className="p-1.5 text-slate-400 hover:text-amber-600 rounded-lg" title="Edit">
+                            <span className="material-symbols-outlined text-base">edit</span>
+                          </button>
+                          <button
+                            onClick={() => toggleActive(m)}
+                            disabled={isSelf}
+                            className={`p-1.5 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed ${m.isActive ? 'text-slate-400 hover:text-rose-600' : 'text-slate-400 hover:text-emerald-600'}`}
+                            title={isSelf ? 'You cannot deactivate your own account' : m.isActive ? 'Deactivate' : 'Reactivate'}
+                          >
+                            <span className="material-symbols-outlined text-base">{m.isActive ? 'block' : 'restart_alt'}</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
             {filtered.length === 0 && (
               <div className="p-6 text-center text-xs text-slate-400">No members match "{query}".</div>
             )}
