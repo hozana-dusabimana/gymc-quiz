@@ -40,17 +40,22 @@ const updateSchema = z.object({
   name: z.string().min(2).max(120).optional(),
   email: z.string().email().max(160).optional(),
   phone: z.string().min(6).max(40).optional(),
-  role: z.enum(['leader', 'admin']).optional(),
+  role: z.enum(['member', 'leader', 'admin']).optional(),
   isActive: z.boolean().optional(),
 });
 
-// PATCH /api/admin/users/:id — edit or deactivate/reactivate a leader/admin account
+// PATCH /api/admin/users/:id — edit, deactivate/reactivate, or change the role
+// of a leader/admin account (an admin may demote another admin, or themself,
+// down to leader/member, and manage any other admin's status).
 router.patch(
   '/users/:id',
   validate(updateSchema),
   asyncHandler(async (req, res) => {
     if (req.params.id === req.user.id && req.body.isActive === false) {
       throw errors.validation('You cannot deactivate your own account');
+    }
+    if (req.params.id === req.user.id && req.body.role && req.body.role !== 'admin') {
+      throw errors.validation('You cannot change your own role');
     }
     const target = await findUserById(req.params.id);
     if (!target || !['leader', 'admin'].includes(target.role)) throw errors.notFound('Account not found');

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@/hooks/useApi';
+import { useAuth } from '@/context/AuthContext';
 import { Admin, type StaffUser } from '@/lib/services';
 import { PageHeader, Badge, Modal } from '@/components/common';
 import { LoadingState, ErrorState, EmptyState, Spinner } from '@/components/ui/States';
@@ -179,10 +180,12 @@ export function AdminDashboardPage() {
 
 function EditStaffModal({ user, onClose, onSaved }: { user: StaffUser; onClose: () => void; onSaved: () => void }) {
   const toast = useToast();
+  const { user: me } = useAuth();
+  const isSelf = me?.id === user.id;
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [phone, setPhone] = useState(user.phone || '');
-  const [role, setRole] = useState<'leader' | 'admin'>(user.role);
+  const [role, setRole] = useState<'member' | 'leader' | 'admin'>(user.role);
   const save = useMutation(Admin.update);
 
   const submit = async (e: React.FormEvent) => {
@@ -213,10 +216,17 @@ function EditStaffModal({ user, onClose, onSaved }: { user: StaffUser; onClose: 
         </label>
         <label className="block">
           <span className="font-semibold text-slate-700 block mb-1">Role</span>
-          <select value={role} onChange={(e) => setRole(e.target.value as 'leader' | 'admin')} className="w-full p-2.5 rounded-xl border border-slate-300 bg-white">
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as 'member' | 'leader' | 'admin')}
+            disabled={isSelf}
+            className="w-full p-2.5 rounded-xl border border-slate-300 bg-white disabled:opacity-60"
+          >
+            <option value="member">Choir member</option>
             <option value="leader">Choir leader</option>
             <option value="admin">Administrator</option>
           </select>
+          {isSelf && <span className="block mt-1 text-[10px] text-slate-400">You cannot change your own role.</span>}
         </label>
         <div className="flex justify-end gap-3 pt-1">
           <button type="button" onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold">

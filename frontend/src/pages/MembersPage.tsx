@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation } from '@/hooks/useApi';
+import { useAuth } from '@/context/AuthContext';
 import { Members, type MemberUser, type MemberDetail } from '@/lib/services';
 import { PageHeader, Badge, Modal } from '@/components/common';
 import { LoadingState, ErrorState, EmptyState, Spinner } from '@/components/ui/States';
@@ -193,17 +194,22 @@ function MemberDetailModal({ id, onClose }: { id: string; onClose: () => void })
 
 function EditMemberModal({ member, onClose, onSaved }: { member: MemberUser; onClose: () => void; onSaved: () => void }) {
   const toast = useToast();
+  const { user: me } = useAuth();
+  const isAdmin = me?.role === 'admin';
   const [name, setName] = useState(member.name);
   const [email, setEmail] = useState(member.email);
   const [phone, setPhone] = useState(member.phone || '');
   const [memberNumber, setMemberNumber] = useState(member.memberNumber || '');
+  const [role, setRole] = useState<'member' | 'leader' | 'admin'>(member.role);
   const save = useMutation(Members.update);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await save.mutate(member.id, { name, email, phone, memberNumber: memberNumber || null });
-      toast.success('Member updated');
+      const body: Parameters<typeof Members.update>[1] = { name, email, phone, memberNumber: memberNumber || null };
+      if (isAdmin && role !== member.role) body.role = role;
+      await save.mutate(member.id, body);
+      toast.success(isAdmin && role !== member.role ? `${name} is now a ${role}` : 'Member updated');
       onSaved();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Could not update member');
@@ -229,6 +235,16 @@ function EditMemberModal({ member, onClose, onSaved }: { member: MemberUser; onC
           <span className="font-semibold text-slate-700 block mb-1">Member number</span>
           <input value={memberNumber} onChange={(e) => setMemberNumber(e.target.value)} placeholder="e.g. GYMC/001" className="w-full p-2.5 rounded-xl border border-slate-300" />
         </label>
+        {isAdmin && (
+          <label className="block">
+            <span className="font-semibold text-slate-700 block mb-1">Role</span>
+            <select value={role} onChange={(e) => setRole(e.target.value as 'member' | 'leader' | 'admin')} className="w-full p-2.5 rounded-xl border border-slate-300 bg-white">
+              <option value="member">Choir member</option>
+              <option value="leader">Choir leader</option>
+              <option value="admin">Administrator</option>
+            </select>
+          </label>
+        )}
         <div className="flex justify-end gap-3 pt-1">
           <button type="button" onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold">
             Cancel

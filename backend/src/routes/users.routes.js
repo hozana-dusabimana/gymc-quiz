@@ -215,17 +215,25 @@ const memberUpdateSchema = z.object({
   phone: z.string().min(6).max(40).optional(),
   memberNumber: z.string().max(60).nullable().optional(),
   isActive: z.boolean().optional(),
+  role: z.enum(['member', 'leader', 'admin']).optional(),
 });
 
-// PATCH /api/users/members/:id — edit or deactivate/reactivate a member (leader/admin)
+// PATCH /api/users/members/:id — edit or deactivate/reactivate a member (leader/admin).
+// Only an admin may promote a member to leader/admin — a leader can edit a
+// member's profile but not their role.
 router.patch(
   '/members/:id',
   requireRole('leader', 'admin'),
   validate(memberUpdateSchema),
   asyncHandler(async (req, res) => {
+    if (req.body.role !== undefined && req.user.role !== 'admin') {
+      throw errors.forbidden('Only an admin can change a member’s role');
+    }
     const target = await findUserById(req.params.id);
     if (!target || target.role !== 'member') throw errors.notFound('Member not found');
-    const user = await updateUser(req.params.id, req.body, ['name', 'email', 'phone', 'memberNumber', 'isActive']);
+    const allow = ['name', 'email', 'phone', 'memberNumber', 'isActive'];
+    if (req.body.role !== undefined) allow.push('role');
+    const user = await updateUser(req.params.id, req.body, allow);
     ok(res, { user });
   }),
 );

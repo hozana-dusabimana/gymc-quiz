@@ -171,7 +171,7 @@ export const Admin = {
   list: () => http.get<{ users: StaffUser[] }>('/admin/users').then((r) => r.users),
   create: (body: { name: string; email: string; phone: string; password: string; role: 'leader' | 'admin' }) =>
     http.post<{ user: StaffUser }>('/admin/users', body).then((r) => r.user),
-  update: (id: string, body: Partial<{ name: string; email: string; phone: string; role: 'leader' | 'admin'; isActive: boolean }>) =>
+  update: (id: string, body: Partial<{ name: string; email: string; phone: string; role: 'member' | 'leader' | 'admin'; isActive: boolean }>) =>
     http.patch<{ user: StaffUser }>(`/admin/users/${id}`, body).then((r) => r.user),
 };
 
@@ -197,7 +197,7 @@ export interface MemberDetail {
 export const Members = {
   list: () => http.get<{ members: MemberUser[] }>('/users/members').then((r) => r.members),
   get: (id: string) => http.get<MemberDetail>(`/users/members/${id}`),
-  update: (id: string, body: Partial<{ name: string; email: string; phone: string; memberNumber: string | null; isActive: boolean }>) =>
+  update: (id: string, body: Partial<{ name: string; email: string; phone: string; memberNumber: string | null; isActive: boolean; role: 'member' | 'leader' | 'admin' }>) =>
     http.patch<{ user: MemberUser }>(`/users/members/${id}`, body).then((r) => r.user),
 };
 

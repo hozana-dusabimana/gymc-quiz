@@ -67,6 +67,34 @@ describe('admin manages leader/admin accounts', () => {
       .send({ name: 'Nope' });
     expect(res.status).toBe(404);
   });
+
+  it('an admin can demote another admin down to leader or member', async () => {
+    const token = await adminToken();
+    const other = await signup('admin');
+    const toLeader = await request
+      .patch(`/api/admin/users/${other.user.id}`)
+      .set(auth(token))
+      .send({ role: 'leader' });
+    expect(toLeader.status).toBe(200);
+    expect(toLeader.body.data.user.role).toBe('leader');
+
+    const toMember = await request
+      .patch(`/api/admin/users/${other.user.id}`)
+      .set(auth(token))
+      .send({ role: 'member' });
+    expect(toMember.status).toBe(200);
+    expect(toMember.body.data.user.role).toBe('member');
+  });
+
+  it('an admin cannot change their own role', async () => {
+    const token = await adminToken();
+    const me = await request.get('/api/auth/me').set(auth(token));
+    const res = await request
+      .patch(`/api/admin/users/${me.body.data.user.id}`)
+      .set(auth(token))
+      .send({ role: 'leader' });
+    expect(res.status).toBe(422);
+  });
 });
 
 describe('leaders manage member accounts', () => {
@@ -139,5 +167,26 @@ describe('leaders manage member accounts', () => {
       .set(auth(leader.token))
       .send({ email: memberA.email });
     expect(res.status).toBe(409);
+  });
+
+  it('a leader cannot promote a member to leader/admin', async () => {
+    const leader = await signup('leader');
+    const member = await signup('member');
+    const res = await request
+      .patch(`/api/users/members/${member.user.id}`)
+      .set(auth(leader.token))
+      .send({ role: 'leader' });
+    expect(res.status).toBe(403);
+  });
+
+  it('an admin can promote a member to leader via the member-management endpoint', async () => {
+    const token = await adminToken();
+    const member = await signup('member');
+    const res = await request
+      .patch(`/api/users/members/${member.user.id}`)
+      .set(auth(token))
+      .send({ role: 'leader' });
+    expect(res.status).toBe(200);
+    expect(res.body.data.user.role).toBe('leader');
   });
 });
